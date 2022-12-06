@@ -1,10 +1,8 @@
 # from itertools import chain
 # import string
 # import functools
-# import re
-# from collections import defaultdict, Counter
 
-fname = 'input5_2.txt'
+# filename = 'input5_4.txt'
 filename = 'input5.txt'
 
 
@@ -32,9 +30,9 @@ total = 0
 
 with open(filename, 'r') as input_file:
     line = next(input_file)
-
+    # print(line)
     containers = []
-    while line[0] == '[':
+    while not line.startswith(" 1"):
         line_length = len(line)//4
         if len(containers) < line_length:
             containers += [[] for _ in range(line_length - len(containers))]
@@ -46,21 +44,43 @@ with open(filename, 'r') as input_file:
             else:
                 containers[ind-1].append(char)
         line = next(input_file)
+        # print(line)
     next(input_file)
     try:
         while True:
             # print(containers)
             # display_containers(containers)
             line = next(input_file)
+            # print(line)
             line = line.strip().split(" ")
+            # print(line)
             num, src, dst = int(line[1]), int(line[3])-1, int(line[5])-1
             # print(num, src+1, dst+1, len(containers))
             # print(containers[src], containers[dst])
 
+            # containers[dst] = list(reversed(containers[src][:num])) + containers[dst]
             containers[dst] = containers[src][:num] + containers[dst]
             containers[src] = containers[src][num:]
     except StopIteration:
         print(''.join([c[0] for c in containers]))
 
 
+# INITIALIZATION
 
+
+# -------------- streaming
+
+with open(filename) as f:
+    char_i = -1
+    row_i = -1
+    c = None
+    while (c != ''):
+        col_i = -1
+        row_i += 1
+        # LINE SETUP
+        l = [None]
+        while not ((c := f.read(1)) in ['\n', '']):
+            char_i += 1
+            col_i += 1
+            # CHAR PROCESSING
+            l[col_i] = c
