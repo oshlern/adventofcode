@@ -1,7 +1,7 @@
 import sys
 # import functools, string, itertools, collections, re
 
-filename = 'inputs/6.txt'
+filename = 'inputs/7.txt'
 if len(sys.argv) >= 2:
     filename = 'inputes/' + sys.argv[1]
 

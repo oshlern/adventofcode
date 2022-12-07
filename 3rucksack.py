@@ -1,7 +1,7 @@
 # from itertools import chain
 import string
 
-input_file = open('input3_2.txt', 'r')
+input_file = open('inputs/3_2.txt', 'r')
 lines = input_file.readlines()
 
 letters = string.ascii_letters

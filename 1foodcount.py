@@ -1,4 +1,4 @@
-input_file = open('input1.txt', 'r')
+input_file = open('inputs/1.txt', 'r')
 lines = input_file.readlines()
   
 # count = 0

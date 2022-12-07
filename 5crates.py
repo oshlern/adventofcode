@@ -2,8 +2,8 @@
 # import string
 # import functools
 
-# filename = 'input5_4.txt'
-filename = 'input5.txt'
+# filename = 'inputs/5_4.txt'
+filename = 'inputs/5.txt'
 
 
 positions = []

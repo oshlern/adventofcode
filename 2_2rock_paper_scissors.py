@@ -1,6 +1,6 @@
 from itertools import chain
 
-input_file = open('input2.txt', 'r')
+input_file = open('inputs/2.txt', 'r')
 lines = input_file.readlines()
 
 scores = {"X": 1, "Y": 2, "Z": 3}

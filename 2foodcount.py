@@ -1,6 +1,6 @@
 from itertools import chain
 
-input_file = open('input1.txt', 'r')
+input_file = open('inputs/1.txt', 'r')
 lines = input_file.readlines()
 lines = chain(lines, "\n")
 

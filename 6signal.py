@@ -2,8 +2,8 @@
 # import string
 # import functools
 
-filename = 'input6.txt'
-# filename = 'input6_2.txt'
+filename = 'inputs/6.txt'
+# filename = 'inputs/6_2.txt'
 last_cs = ""
 
 with open(filename, 'r') as input_file:

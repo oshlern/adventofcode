@@ -2,8 +2,8 @@
 import string
 import functools
 
-# filename = 'input3_2.txt'
-filename = 'input3.txt'
+# filename = 'inputs/3_2.txt'
+filename = 'inputs/3.txt'
 
 # lines = input_file.readlines()
 
