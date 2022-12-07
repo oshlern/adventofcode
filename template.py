@@ -3,7 +3,7 @@ import sys
 
 filename = 'inputs/6.txt'
 if len(sys.argv) >= 2:
-    filename = 'inputes/' + sys.argv[1]
+    filename = 'inputs/' + sys.argv[1]
 
 
 with open(filename, 'r') as f:
