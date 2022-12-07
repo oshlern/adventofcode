@@ -51,9 +51,7 @@ with open(filename, 'r') as input_file:
             # print(containers)
             # display_containers(containers)
             line = next(input_file)
-            # print(line)
             line = line.strip().split(" ")
-            # print(line)
             num, src, dst = int(line[1]), int(line[3])-1, int(line[5])-1
             # print(num, src+1, dst+1, len(containers))
             # print(containers[src], containers[dst])
