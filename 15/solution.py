@@ -117,59 +117,69 @@ for i in rms:
     bs.pop(i)
 print(ds)
 
-nss = []
-def convert_coords
-for s in ss:
+# nss = []
+# def convert_coords
+# for s in ss:
 
 
 ss = np.array([list(s) for s in ss])
 ds = np.array(ds)
 n = 4000000 if len(sys.argv) == 1 else 20
+# a = np.zeros((n, n))
+# coords = np.arange(n)
+# xcoords = np.tile(coords, (n, 1))
+# ycoords = np.tile(coords.T, (1, n))
+# cs = np.array([xcoords, ycoords])
+# cs = np.transpose(cs, axes=(n, n, 1))
+# dists = np.sum(np.abs(cs - ss - np.array([[x,y]])), axis=1)
+
+
 # for x in range(n+1):
 #     if x % 10 == 0:
 #         print(x)
 #     for y in range(n+1):
-#         # if dist(x, y, cx, )
-#         # print(ss - )
-#         dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
-#         if np.all(dists > ds):
-#             print(x,y)
+#         i = 2 - 2
+        # if dist(x, y, cx, )
+        # print(ss - )
+        # dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
+        # if np.all(dists > ds):
+        #     print(x,y)
 
-x0 = n
-y0 = 0
-x = n
-y = 0
-dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
-diffs = dists <= ds
-while np.any(diffs):
-    # print(diffs.shape)
-    # print(np.where(diffs), i)
-    i = np.where(diffs)[0][0]
+# x0 = n
+# y0 = 0
+# x = n
+# y = 0
+# dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
+# diffs = dists <= ds
+# while np.any(diffs):
+#     # print(diffs.shape)
+#     # print(np.where(diffs), i)
+#     i = np.where(diffs)[0][0]
 
 
-# for i, di in enumerate(dists):
-#     if di < ds[i]:
-    sx, sy = ss[i]
-    # d_perp = abs((x - y)  - (sx -sy))
-    # d_ort = ds[i] - d_perp
-    # x += d_ort
-    # y += d_ort
-    m = sx + sy + d
-    m1 = max(x + y - m, 0)
-    x += m1//2+1
-    y += m1//2+1
-    if x > n or y > n:
-        if x0 % 100 == 0 and y0 % 100 == 0:
-            print(x0, y0)
-        if x0 > 0:
-            x0 -= 1
-        else:
-            y0 += 1
-        x = x0
-        y = y0
-    dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
-    diffs = dists <= ds
-print(x, y)
+# # for i, di in enumerate(dists):
+# #     if di < ds[i]:
+#     sx, sy = ss[i]
+#     # d_perp = abs((x - y)  - (sx -sy))
+#     # d_ort = ds[i] - d_perp
+#     # x += d_ort
+#     # y += d_ort
+#     m = sx + sy + d
+#     m1 = max(x + y - m, 0)
+#     x += m1//2+1
+#     y += m1//2+1
+#     if x > n or y > n:
+#         if x0 % 100 == 0 and y0 % 100 == 0:
+#             print(x0, y0)
+#         if x0 > 0:
+#             x0 -= 1
+#         else:
+#             y0 += 1
+#         x = x0
+#         y = y0
+#     dists = np.sum(np.abs(ss - np.array([[x,y]])), axis=1)
+#     diffs = dists <= ds
+# print(x, y)
     # break
     # if 
     # d_orth  = x + y  - (sx+sy)
@@ -217,5 +227,97 @@ print(x, y)
 #         print(x)
 
 
+def boundary(s, d):
+    d = d+1
+    p = np.expand_dims(s, 0) + d * np.array([[-1,0]])
+    yield p
+    diags = [np.array([[1,1]]), np.array([[1,-1]]), np.array([[-1,-1]]), np.array([[-1,1]])]
+    for dp in diags:
+        for _ in range(d):
+            p += dp
+            yield p
+    
+for i in range(len(ds)):
+    s, d = ss[i], ds[i]
+    print(i, d)
+# for (sx, sy), d in zip(ss, ds):
+    for p in boundary(s, d):
+        if np.any(p > n) or np.any(p < 0):
+            continue
+        if np.all(np.sum(np.abs(ss - p), axis=1) > ds):
+            print("_)_____", p, p[0,0]*n + p[0,1])
+
+# def check(x,y):
+#     return np.all(np.sum(np.abs(ss - np.array([[x,y]])), axis=1) > ds)
+    # diffs = dists <= ds
+
     
 # print(o)
+
+
+# cleared = set()
+# coord = x
+
+
+# frontier = []
+
+# def pm_coords(pos):
+#     x,y = pos
+#     plus = x + y
+#     minus = x - y
+# def xy_coords(pos):
+#     x,y = pos
+#     plus = x + y
+#     minus = x - y
+
+
+# def get_box(pos): # which coords
+#     return b, d
+
+# # first, build tiangleas.
+# # Maybe shorter way. Keep building to all 4 corners
+# # def get_next(frontier):
+# while True:
+#     # p1, p2 = frontier[0], frontier[1]
+#     f1pm, f1m = frontier[0]
+#     x1, y1 = xy_coords(frontier[0])
+#     # f1m, f1p = 
+#     if y1 > 0:
+#         # from the top
+#         p = (f1m,0)
+#         p = xy_coords
+#     else:
+#         x2, y2 = frontier[1]
+#         mid = (x1 + y1, x2-y2)
+#         p = mid
+#     b, d = get_box(mid)
+#     bx, by = b
+#     bp, bm = b
+#     np, nm = bp + d, bm + d
+#     if np >= f2p:
+#         rm(2)
+#         np = f2p
+#     if nm >= f1m:
+#         rm(1)
+#         nm = f2m
+#     add((np, nm))
+
+# rotate(4)
+    
+    
+# check first
+# find box
+# add frontier
+
+# cleared
+#loop :
+    # check next
+    # find box
+    # clear behind
+
+# clear behind:
+# check first
+# find box
+# clear behind
+# def clear_behind():
+    
