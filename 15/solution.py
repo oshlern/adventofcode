@@ -125,6 +125,135 @@ print(ds)
 ss = np.array([list(s) for s in ss])
 ds = np.array(ds)
 n = 4000000 if len(sys.argv) == 1 else 20
+
+
+
+
+def boundary(s, d):
+    d = d+1
+    p = np.expand_dims(s, 0) + d * np.array([[-1,0]])
+    yield p
+    diags = [np.array([[1,1]]), np.array([[1,-1]]), np.array([[-1,-1]]), np.array([[-1,1]])]
+    for dp in diags:
+        for _ in range(d):
+            p += dp
+            yield p
+
+del dist
+
+def bound(c):
+    c -= min(c.real, 0)
+    c -= min(c.imag, 0)*1.0j
+    c -= max(c.real - n, 0)
+    c -= max(c.imag - n, 0)*1.0j
+    return c
+
+def to_bound(c):
+    to_bound_r = max(-c.real, max(c.real-n,0))
+    to_bound_i = max(-c.imag, max(c.imag-n,0))
+    return max(to_bound_r, to_bound_i)
+
+def dot(a,b):
+    return a.real *b.real + a.imag * b.imag
+# def scan(c1, c2):
+def scan(c1_1, c1_2, c2_1, c2_2):
+    # c1, c2 = bound(c1), bound(c2)
+    print(c1_1, c1_2, c2_1, c2_2)
+
+    diag = c2_1- c1_1
+    l = np.abs(diag.real)
+    # print("L", l)
+    diag = diag / l
+    c1 = c1_1 if dot(c1_1, diag) > dot(c1_2, diag) else c1_2
+    c2 = c2_1 if dot(c2_1, diag) > dot(c2_2, diag) else c2_2
+    # print(c1_1, c1_2, c2_1, c2_2)
+    # print('scanning {} to {}'.format(c1, c2))
+    # print(c1)
+    l = np.abs((c1-c2).real)
+
+    print("L", l, diag)
+    c1 += to_bound(c1) * diag
+    c2 -= to_bound(c2) * diag
+    if to_bound(c1) > 0.1 or to_bound(c2) > 0.1:
+        print("OUT OF BOUNDS")
+        return
+    start = dot(c1, diag)
+    end = dot(c2, diag)
+    i = 0
+    p = c1
+    # print("A", dot(p, diag.real * 1.0j - diag.imag1+1.0j))
+    # print("B", dot(p, 1-1.0j))
+    # to_b = to_bound(p)
+    # if to_b > 0:
+    #     i += to_b
+    while i < end - start:
+        # print(i, p)
+        diffs = ss - p
+        # print(diffs)
+        dists = np.abs(np.real(diffs)) + np.abs(np.imag(diffs))
+        # print(p, dists)
+        less = dists <= ds
+        # print(np.any(less), list(zip(dists, ds)))
+        if not np.any(less):
+            # print(p)
+            yield p
+            i += 2
+            p += diag
+
+        else:
+            sis = np.where(less)[0][0]
+            o = i
+            i = dot(ss[sis], diag) + ds[sis] + 1 - start
+            # print(o, i,ss[sis],ds[sis],diag, dot(ss[sis], diag), start , c1)
+            p = c1 + i//2 * diag
+            # print(p)
+            # skip =  - dot(p[sis], diag) 
+            # p += skip * diag
+            # i += diag
+
+# print(ss)
+# print([s[0] + s[1]*j for s in ss])
+print('aaa')
+# print([ s[1]*j for s in ss])
+ss = np.array([float(s[0]) + s[1]*1.0j for s in ss], dtype=complex)
+# print(ss)
+for i in range(len(ds)):
+    s1, d1 = ss[i], ds[i]
+    for j in range(i+1, len(ds)):
+        s2, d2 = ss[j], ds[j]
+        diff = s1 - s2
+        dist = np.abs(np.real(diff)) + np.abs(np.imag(diff))
+        # if dist < d1 + d2 + 10:
+        #     print(dist,  d1 + d2 + 1, diff, d1, d2)
+        if dist == d1 + d2 + 2:
+            # print(s1, s2)
+            sign_i = np.sign(diff.imag)
+            sign_r = np.sign(diff.real)
+            # if abs(diff.real) < abs(diff.imag):
+            c1_1 = s1 - sign_i * (d1 + 1) * 1.0j
+            c1_2 = s2 + sign_r * (d2 + 1)
+            c2_1 = s1 - sign_r * (d1 + 1)
+            c2_2 = s2 + sign_i * (d2 + 1) * 1.0j
+            # else:
+            #     c1 = s1 - sign_r * (d1 + 1)
+            #     c2 = s2 + sign_r * (d2 + 1)
+            print("Ss", s1, d1, s2, d2)
+            # print(c1, c2)
+            ps = scan(c1_1, c1_2, c2_1, c2_2)
+            ps = list(ps)
+            if len(ps):
+                print("\n\n", ps)
+                print(int(ps[0].real * n + ps[0].imag))
+    # print(i, d1)
+# for (sx, sy), d in zip(ss, ds):
+    # for p in boundary(s, d):
+    #     if np.any(p > n) or np.any(p < 0):
+    #         continue
+    #     if np.all(np.sum(np.abs(ss - p), axis=1) > ds):
+    #         print("_)_____", p, p[0,0]*n + p[0,1])
+
+
+
 # a = np.zeros((n, n))
 # coords = np.arange(n)
 # xcoords = np.tile(coords, (n, 1))
@@ -227,25 +356,25 @@ n = 4000000 if len(sys.argv) == 1 else 20
 #         print(x)
 
 
-def boundary(s, d):
-    d = d+1
-    p = np.expand_dims(s, 0) + d * np.array([[-1,0]])
-    yield p
-    diags = [np.array([[1,1]]), np.array([[1,-1]]), np.array([[-1,-1]]), np.array([[-1,1]])]
-    for dp in diags:
-        for _ in range(d):
-            p += dp
-            yield p
+# def boundary(s, d):
+#     d = d+1
+#     p = np.expand_dims(s, 0) + d * np.array([[-1,0]])
+#     yield p
+#     diags = [np.array([[1,1]]), np.array([[1,-1]]), np.array([[-1,-1]]), np.array([[-1,1]])]
+#     for dp in diags:
+#         for _ in range(d):
+#             p += dp
+#             yield p
     
-for i in range(len(ds)):
-    s, d = ss[i], ds[i]
-    print(i, d)
-# for (sx, sy), d in zip(ss, ds):
-    for p in boundary(s, d):
-        if np.any(p > n) or np.any(p < 0):
-            continue
-        if np.all(np.sum(np.abs(ss - p), axis=1) > ds):
-            print("_)_____", p, p[0,0]*n + p[0,1])
+# for i in range(len(ds)):
+#     s, d = ss[i], ds[i]
+#     print(i, d)
+# # for (sx, sy), d in zip(ss, ds):
+#     for p in boundary(s, d):
+#         if np.any(p > n) or np.any(p < 0):
+#             continue
+#         if np.all(np.sum(np.abs(ss - p), axis=1) > ds):
+#             print("_)_____", p, p[0,0]*n + p[0,1])
 
 # def check(x,y):
 #     return np.all(np.sum(np.abs(ss - np.array([[x,y]])), axis=1) > ds)
