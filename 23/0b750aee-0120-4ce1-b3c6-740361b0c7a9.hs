@@ -10,9 +10,9 @@ for i,r in enumerate(grid):
         if c == "#":
             elves.append((i,j))
 
-# grid = np.array([[c == "#" for c in r ] for r in grid], dtype=bool)
+grid = np.array([[c == "#" for c in r ] for r in grid], dtype=bool)
 
-# print(grid)
+print(grid)
 def north_empty(c):
     return not( (c[0] - 1, c[1]) in elves or  (c[0] - 1, c[1]-1) in elves or  (c[0] - 1, c[1]+1) in elves)
 
@@ -62,8 +62,11 @@ def display(elves):
             else:
                 r += "."
         print(r)
-# display(elves)
+display(elves)
 
+round = -1
+# while round < 2:
+#     round += 1
 dirs = [
     (-1,0,0,1,0,3),
     ( 1,0,2,3,0,3),
@@ -73,16 +76,14 @@ dirs = [
 
 start = time.time()
 d_ind = 0
-all_ems = None
-
-round = -1
-while True:
-    round += 1
-# for round in range(10):
+for round in range(10):
     print("Round", round+1)
+    # print(dis)
+    props = [None for e in elves]
     ps = []
     moved = False
     for i,e in enumerate(elves):
+
         ns = np.array([
             [(e[0]-1, e[1]-1) in elves, (e[0]-1, e[1])  in elves, (e[0]-1, e[1]+1)  in elves],
             [(e[0],   e[1]-1) in elves,                    False, (e[0],   e[1]+1)  in elves],
@@ -95,27 +96,33 @@ while True:
                 if not np.any(ns[i1:i2,j1:j2]):
                     ps.append((i, (e[0] + i0, e[1] + j0)))
                     break
-    e_ms = set()
+
+        # if empty(e):
+        #     # props = e
+        #     continue
+        # for di in dis:
+        #     if d_es[di](e):
+        #         props[i] = ds[di](e)
+        #         ps.append((i, ds[di](e)))
+        #         break
+
     while ps:
         i,p = ps.pop()
-        n = len(ps)
-        ps = [x for x in ps if x[1] != p]
-        if len(ps) == n:
+        a = False
+        for ind in range(len(ps)-1,-1,-1):
+            if ps[ind][1] == p:
+                ps.pop(ind)
+                a = True
+        if not a:
             moved = True
-            e_ms.add(i)
             elves[i] = p
-    if all_ems:
-        print(len(e_ms - all_ems), len(all_ems - e_ms), len(elves))
-        # print()
-    else:
-        print(len(e_ms))
-    all_ems = e_ms
-
-    d_ind += 1
 
     if not moved:
         print(round + 1)
         break
+
+    # dis = dis[1:] + [dis[0]]
+    d_ind += 1
 
 end = time.time()
 print("time", end - start)
