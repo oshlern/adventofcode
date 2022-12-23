@@ -28,19 +28,22 @@ for l in ll:
 ws = np.array([list(w) for w in ws])
 print(ws)
 
-buff = 1000
-grid = np.zeros((buff + max(ws[:,0])+1+buff, max(ws[:,1])+3), dtype=bool)
+buff = max(ws[:,1])+1
+print(buff)
+# grid = np.zeros((buff + max(ws[:,0])+1+buff, max(ws[:,1])+3), dtype=bool)
+grid = np.zeros((buff + max(ws[:,0])+1+buff, max(ws[:,1])+1), dtype=bool)
 for w in ws:
     grid[buff+w[0],w[1]] = True
 
-grid[:,-1] = True
+grid = np.append(grid, np.zeros((grid.shape[0],1), dtype=bool), axis=1)
+grid = np.append(grid, np.ones((grid.shape[0],1), dtype=bool), axis=1)
+# grid[:,-1] = True
 
 print(grid)
 si = 0
 while True:
-    si += 1
     s = [buff + 500, 0]
-    print(si)
+    # print(si)
     while s[1] < grid.shape[1]-1:
         if grid[s[0],s[1]+1]:
             if s[0] > 1 and not grid[s[0]-1,s[1]+1]:
@@ -52,11 +55,12 @@ while True:
         s[1] += 1
         # print(s)
     else:
+        # s[i] 
         break
-
+    si += 1
     grid[s[0],s[1]] = True
     # if si> 3:
     #     break
     if s == [buff + 500,0]:
         break
-print(si-1)
+print(si)

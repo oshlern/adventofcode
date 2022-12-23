@@ -169,7 +169,7 @@ T = 24
 o = c = b = g = 0
 rc = rb = rg = 0
 ll = ll[:3]
-T = 32/6
+T = 32
 for i,l in enumerate(ll):
     r = re.search(p, l)
     ro_o = int(r[2])
