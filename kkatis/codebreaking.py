@@ -77,7 +77,11 @@ def decrypt(m, N, X):
         n += s * p
         # p *= pow(10,len(str(s)))
         # print(s)
-        p *= p10s[int(math.log(s, 10)) if s else 1]
+        p *= p10s[int(math.log(s,10)+0.0000000001) if s else 1]
+        # x =  int((math.log(s,10))+0.00000001)+1 if s else 1
+        # if p10s[x] != 10**len(str(s)):
+        #     print(x, len(str(s)), s, math.log(s,10))
+        # print()
     times["n"] = time.time() - start
     # start = time.time()
     # OTP_len = int(math.log(n) / math.log(27))
