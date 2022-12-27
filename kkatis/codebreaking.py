@@ -7,41 +7,104 @@ mod = 2**20
 def decrypt(m, N, X):
     times = {}
     true_start = time.time()
-    start = time.time()
-    T = int(((pow(33,X*X, 32*mod * (pow(33,X)-1))-1)/(pow(33,X)-1)))
-    times["T"] = time.time() - start
-    print("__________", math.log(T)/math.log(10))
-
-    col_sums = [int((pow(33,i+1,32*mod)* T - X) / 32) % mod for i in range(X)]
-    # col_sums = list(reversed(col_sums))
-    print(len(col_sums))
+    # start = time.time()
+    # X_33 = pow(33, X, 32*mod)
+    # T = 1
+    # p = 1
+    # for i in range(X-1):
+    #     p = (p * X_33) % (32 *mod)
+    #     T = (T+p)% (32 *mod)
+    # times["T"] = time.time() - start
 
     # start = time.time()
-    # n_digs10 = [int(math.log(c)/math.log(10))+1 if c else 1 for c in col_sums]
-    # p10s = [(10**n) for n in n_digs10]
+    # X_33 = pow(33, X, 32*mod)
+    # T3 = sum(pow(X_33, i, 32*mod) for i in range(X))
+    # times["T3"] = time.time() - start
 
+    # start = time.time()
+    # X_33 = pow(33, X, 32*mod)
+    # T4 = (pow(X_33, X, 32*mod * (X_33-1)) - 1) / (X_33 - 1) 
+    # times["T4"] = time.time() - start
 
-    # # n = 0
-    # # p = 1
-    # # start = time.time()
-    # # for ni in reversed(col_sums):
-    # #     n += int(ni) * p
-    # #     p *= pow(10,len(str(ni)))
-    # # times["n"] = time.time() - start
-    # # c_p10s = []
-    # # p10 = 1
-    # # for i,n_digs in enumerate(n_digs10):
-    # #     c_p10s.append(col_sums[i])
-    # #     p10 *= 10 ** n_digs
-    # # sums_ndigs = list(list(x) for x in zip(col_sums, n_digs10))
-    # OTP_len10 = sum(n_digs10)
-    # OTP_len = int((OTP_len10) * (math.log(10)/math.log(27))) + 1
-    # print(OTP_len, OTP_len10)
-    # digs27 = []
-    # p27 = 1
-    # print(OTP_len)
-    # for round in range(OTP_len):
-    #     p27 *= 27
+    # start = time.time()
+    # T2 = int(((pow(33,X*X, 32*mod * (pow(33,X)-1))-1)/(pow(33,X)-1))) % (32*mod)
+    # times["T2"] = time.time() - start
+    # print(times)
+    # print(T == T2, T == T3, T3 == T2, T == T4)
+    # print(T - T2, T - T3, T3 - T2, T- T4, T3-T4)
+    # pow(33,X*X, 32*mod * (pow(33,X)-1))-1)/(pow(33,X)-1))
+    # 33^X*X / (33^X-1) 
+    # 33^X*X / 33^X * 33^X /(33^X-1) 
+    # 33^X*(X-1) * (1 + 1 /(33^X-1) 
+    # 33^X*(X-1) /(33^X-1)  + 33^X*(X-1)
+    # 33^X*(X-1) / 33^X * 33^X  /(33^X-1)  + 33^X*(X-1)
+    # 33^X*(X-2) * (1 + 1 /(33^X-1))   + 33^X*(X-1)
+    # 33^X*(X-2)  /(33^X-1) + 33^X*(X-2) + 33^X*(X-1)
+    # 33^X*(X-n)  /(33^X-1) + 33^X*(X-n) + 33^X*(X-2) + 33^X*(X-1)
+
+    # 33^X*X / (33^X-1) * 33^X+1/33^X+1 
+    # 33^X*X / (33^2X-1)  * 33^X+1
+    # 33^X*X / (33^X-1) * 33^-X+1/33^-X+1 
+    # 33^X*X / (33^X-33^-X)  * 33^-X+1
+
+    # 33^i * 33^X*X / (33^X-1) - X / 32
+    # 33^i * 33^X*X / (33^X-1) - X / 32
+    # X^2 * log(33) - log(33^X - 1)
+    # 
+    start = time.time()
+    X_33 = pow(33, X, 32*mod)
+    T = (pow(X_33, X, 32*mod * (X_33-1)) - 1) / (X_33 - 1) 
+    times["T"] = time.time() - start
+    # print("__________", math.log(T)/math.log(10))
+    # start = time.time()
+    # col_sums = [int((pow(33,i+1,32*mod)* T - X) / 32) % mod for i in range(X)]
+    # col_sums = list(reversed(col_sums))
+    # print(len(col_sums))
+    print("*"*30)
+    
+    n = 0
+    p = 1
+
+    # col_sums = [ % mod for i in range(X)]
+
+    # for ni in reversed(col_sums):
+    # ss = [int((pow(33,i+1,32*mod)* T - X) / 32) % mod for i in range(X,-1,-1)]
+
+    p10s = [(10**j) for j in range(9)]
+    for i in range(X-1,-1,-1):
+        # s = int((pow(33,i+1,32*mod)* T - X) / 32)
+        s = int((pow(33,i+1,32*mod)* T - X) / 32) % mod
+        n += s * p
+        # p *= pow(10,len(str(s)))
+        # print(s)
+        p *= p10s[int(math.log(s, 10)) if s else 1]
+    times["n"] = time.time() - start
+    # start = time.time()
+    # OTP_len = int(math.log(n) / math.log(27))
+    # print(OTP_len, len(m))
+    # n = n // (27 ** max(0,OTP_len - (len(m)+2)))
+    # times["shortened"] = time.time() - start
+    start = time.time()
+
+    max_e = int(math.log(n) / math.log(27))
+    print("exp", max_e)
+    p = 27 ** max_e
+    dig27 = ""
+    # e = max_e
+    for _ in range(len(m)):
+        coef = int(n // p)
+        dig27 += Ls[coef]
+        n -= coef * p
+        p = int(p // 27)
+
+    # p27 = p
+    # for _ in range(len(m)):
+    #     coef = int(n // p)
+    #     dig27 += Ls[coef]
+    #     n -= coef * p
+    #     p = int(p // 27)
+
+    #     #  27
     #     p10s_mod_p27 = [(10**j) % p27 for j in range(8)]
     #     p10 = 1
     #     coef = 0
@@ -70,40 +133,11 @@ def decrypt(m, N, X):
     #         n_digs10.pop(0)
     #         p10s.pop(0)
 
-    #     digs27.append(coef)
-    #     # print(i, Ls[coef], coef)
-    # print(col_sums)
-    # dig27 = ""
-    # for coef in reversed(digs27):
+    # for e in range(max_e, -1, -1):
+    #     coef = int(n // p)
+    #     n -= coef * p
+    #     p = int(p // 27)
     #     dig27 += Ls[coef]
-    # print(dig27)
-    # times["bad"] = time.time() - start
-
-    print("*"*30)
-    
-    n = 0
-    p = 1
-    start = time.time()
-    for ni in reversed(col_sums):
-        n += int(ni) * p
-        p *= pow(10,len(str(ni)))
-    times["n"] = time.time() - start
-    # start = time.time()
-    # OTP_len = int(math.log(n) / math.log(27))
-    # print(OTP_len, len(m))
-    # n = n // (27 ** max(0,OTP_len - (len(m)+2)))
-    # times["shortened"] = time.time() - start
-    start = time.time()
-
-    max_e = int(math.log(n) / math.log(27))
-    print("exp", max_e)
-    p = 27 ** max_e
-    dig27 = ""
-    for e in range(max_e, -1, -1):
-        coef = int(n // p)
-        n -= coef * p
-        p = int(p // 27)
-        dig27 += Ls[coef]
     print(dig27)
 
     o = ""
