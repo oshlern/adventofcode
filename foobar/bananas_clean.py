@@ -1,23 +1,13 @@
 from collections import defaultdict
+import math
 # def solution(banana_list):
 #     graph = []
-infs = set()
 def infinite(n1, n2):
-    global infs
-    visited = set()
-    while n1 != n2:
-        if n2 < n1: # sort n1 < n2
-            n1, n2 = n2, n1
-        # print(n1, n2)
-        if (n1, n2) in infs or (n1, n2) in visited:
-            # print("infinite\n")
-            infs = infs.union(visited)
-            return True
-        visited.add((n1,n2))
-        n1, n2 = n1*2, n2 - n1
-    # print(n1, n2)
-    # print("equal\n")
-    return False
+    d = math.gcd(n1, n2)
+    n1, n2 = int(n1/d), int(n2/d)
+    n = n1 + n2
+    is_2pow = (n & (n-1)) == 0
+    return not is_2pow
 
 meta_root = -1
 def ancestors(v, roots):
@@ -148,6 +138,7 @@ def solution(banana_list):
                 pairs.add(edge)
             else:
                 pairs.remove(edge)
+
 
 print(solution([1, 7, 3, 21, 13, 19]))
 print(solution([1,1]))
