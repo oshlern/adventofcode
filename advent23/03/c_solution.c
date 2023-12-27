@@ -7,25 +7,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(void)
-{
-    FILE * fp;
-    char * line = NULL;
+int main(int argc, char *argv[]) {
+    // FILE * fp;
+    // char * line = NULL;
+    // size_t len = 0;
+    // ssize_t read;
+    FILE* file_pointer;
+    char* line = NULL;
     size_t len = 0;
     ssize_t read;
-
-    fp = fopen("input", "r");
-    if (fp == NULL)
+    file_pointer = fopen("input", "r");
+    if (file_pointer == NULL) {
         exit(EXIT_FAILURE);
-
-    while ((read = getline(&line, &len, fp)) != -1) {
+    }
+    while ((read = getline(&line, &len, file_pointer)) != -1) {
         printf("Retrieved line of length %zu:\n", read);
         printf("%s", line);
     }
 
-    fclose(fp);
+    // fp = fopen("input", "r");
+    // if (fp == NULL)
+    //     exit(EXIT_FAILURE);
+
+    // while ((read = getline(&line, &len, fp)) != -1) {
+    //     printf("Retrieved line of length %zu:\n", read);
+    //     printf("%s", line);
+    // }
+
+    fclose(file_pointer);
     if (line)
         free(line);
+    // if (*line_pointer)
+    //     free(*line_pointer);
     exit(EXIT_SUCCESS);
 }
 
