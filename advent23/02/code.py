@@ -17,6 +17,7 @@ for l in ll:
     #     total += game_id
     power = max_seen["red"]*max_seen["green"]*max_seen["blue"]
     total += power
+    print(game_id, power, list(max_seen.values()))
 print(total)
 # print(prod)
 # reg = re.findall('(?:;|:) (?:(\d+) (blue|red|green)(?:, )?){2}')
