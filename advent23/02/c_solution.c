@@ -64,34 +64,3 @@ int main(int argc, char *argv[]) {
         free(line);
     exit(EXIT_SUCCESS);
 }
-
-
-// int main(int argc, char *argv[]) {
-//     char* filename = "input.txt";
-//     // char* filename = "test_input.txt";
-
-//     FILE* fp;
-//     char* line = NULL;
-//     size_t len = 0;
-//     ssize_t read;
-//     fp = fopen(filename, "r");
-//     if (fp == NULL)
-//         exit(EXIT_FAILURE);
-
-//     int max_blue = 14, max_red = 12, max_green = 13;
-//     int total = 0;
-//     while ((read = getline(&line, &len, fp)) != -1) {
-//         struct Balls seen = seen_balls(line);
-//         if ((max_blue >= seen.blue) && (max_green >= seen.green) && (max_red >= seen.red)) {
-//             total += seen.game_id;
-//             // printf("%d\n", seen.game_id);
-//         }
-//     }
-
-//     printf("%d\n", total);
-
-//     fclose(fp);
-//     if (line)
-//         free(line);
-//     exit(EXIT_SUCCESS);
-// }
