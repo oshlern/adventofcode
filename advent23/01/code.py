@@ -64,6 +64,12 @@ print(ds)
 
 
 
+
+# spellings = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+# digit_vals = {**{str(i): i for i in range(1,10)}, **{spellings[i]: i for i in range(1,10)}}
+# # digit_vals |= {spellings[i]: i for i in range(1,10)}
+# print(digit_vals)
+
 # testing another user's code
 
 import re
