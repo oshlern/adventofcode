@@ -4,11 +4,86 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// const char* FILENAME = "input";
-// const int NUM_SEEDS = 20;
-const char* FILENAME = "test";
-const int NUM_SEEDS = 4;
-const int MAX_PAIRS = 1000;
+const char* FILENAME = "input";
+const int NUM_SEEDS = 20;
+// const char* FILENAME = "test";
+// const int NUM_SEEDS = 4;
+
+struct Node* seeds_base = NULL;
+struct Node* news_base = NULL;
+
+
+// Linked list
+struct Node {
+    long start;
+    long end;
+    struct Node* next;
+};
+
+struct Node* createNode(long start, long end, struct Node* next) {
+    struct Node* newNode = (struct Node*) malloc(sizeof(struct Node));
+    if (newNode != NULL) {
+        newNode->start = start;
+        newNode->end = end;
+        newNode->next = next;
+    } else {
+        fprintf(stderr, "Error: Unable to allocate memory for a new node.\n");
+        exit(EXIT_FAILURE);
+    }
+    return newNode;
+}
+
+void deleteSeed(struct Node* seed) {
+    // printf("AAA %ld %ld\n", seed->start, seed->end);
+    struct Node* S = seeds_base;
+    while (S != NULL) {
+        // printf("s: %ld, e: %ld\n", S->start, S->end);
+        S = S->next;
+    }
+    if (seed != seeds_base) {
+        struct Node* s = seeds_base;
+        while (s->next != seed) {
+            if (s->next == NULL) {
+                // printf("aaa %ld %ld\n", s->start, s->end);
+            }
+            s = s->next;
+        }
+        s->next = seed->next;
+    } else {
+        seeds_base = seed->next;
+    }
+    free(seed);
+}
+
+void newRange(long s, long e, long shift) {
+    news_base = createNode(s + shift, e + shift, news_base);
+}
+
+void convertRange(struct Node* seed, long shift, long m_S, long m_E) {
+    long s_S = seed->start;
+    long s_E = seed->end;
+    // printf("s: %ld, e: %ld, S: %ld, E: %ld, shift: %ld\n", s_S, s_E, m_S, m_E, shift);
+    if ((s_S > m_E) || (s_E < m_S))
+        return;
+    if (s_S < m_S) {
+        if (s_E <= m_E) { // s S e E ==> NS NE, s S
+            newRange(m_S, s_E, shift);
+            seed->end = m_S;
+        } else {         // s S E e ==> NS NE, s S, E e
+            newRange(m_S, m_E, shift);
+            seed->end = m_S;
+            seed->next = createNode(m_E, s_E, seed->next);
+        }
+    } else {
+        if (s_E <= m_E) { // S s e E ==> NS NE
+            newRange(s_S, s_E, shift);
+            deleteSeed(seed);
+        } else {         // S s E e ==> NS NE, E e
+            newRange(s_S, m_E, shift);
+            seed->start = m_E;
+        }
+    }
+}
 
 int main(int argc, char *argv[]) {
     FILE* fp;
@@ -17,24 +92,13 @@ int main(int argc, char *argv[]) {
     ssize_t read;
     fp = fopen(FILENAME, "r");
     
-    long seeds[MAX_PAIRS][2];
-    int seed_i, new_i;
     getline(&line, &len, fp);
     strtok(line, " ");
-    for (seed_i = 0; seed_i < NUM_SEEDS/2; seed_i++) {
-        seeds[seed_i][0] = strtol(strtok(NULL, " \n"), NULL, 10);
-        seeds[seed_i][1] = strtol(strtok(NULL, " \n"), NULL, 10);
+    for (int i = 0; i < NUM_SEEDS/2; i++) {
+        long start = strtol(strtok(NULL, " \n"), NULL, 10);
+        long range = strtol(strtok(NULL, " \n"), NULL, 10);
+        seeds_base = createNode(start, start + range, seeds_base);
     }
-
-    long news[MAX_PAIRS][2];
-    // for (new_i = 0; new_i < MAX_PAIRS; new_i++) {
-    //     news[new_i][0] = -1;
-    //     news[new_i][1] = -1;
-    //     if (i >= NUM_SEEDS/2) {
-    //         seeds[i][0] = -1;
-    //         seeds[i][1] = -1;
-    //     }
-    // }
 
     getline(&line, &len, fp); // "\n"
     while ((read =  getline(&line, &len, fp)) != -1) { // "a-to-b map:"
@@ -42,52 +106,45 @@ int main(int argc, char *argv[]) {
             long dst_st = strtol(strtok(line, " "), NULL, 10);
             long src_st = strtol(strtok(NULL, " "), NULL, 10);
             long range = strtol(strtok(NULL, "\n"), NULL, 10);
-            long S = src_st;
-            long E = src_st + range;
-            for (int i = 0; i < seed_i; i++) {
-                long s = seeds[i][0];
-                long e = seeds[i][0];
-                if ((s > S) && (s < E)) {
-                    if (e < E) {
-                        new
-                    }
-                }
-                if ((src_st <= cur) && (cur < src_st + range))
-                    news[i] = cur - src_st + dst_st;
+            long shift = dst_st - src_st;
+            long m_S = src_st;
+            long m_E = src_st + range;
+            struct Node* seed = seeds_base;
+            struct Node* next;
+            while (seed != NULL) {
+                next = seed->next;
+                convertRange(seed, shift, m_S, m_E);
+                seed = next;
             }
-            // S s E e ==> NS NE, ns e
-            // S s e E ==> NS NE
-            // s S e E ==> NS NE
-            // s S E e ==> NS NE, s S, E e
         }
-        for (int i = 0; i < NUM_SEEDS; i++) {
-            printf("seed: %ld, \tnew:%ld\n", seeds[i], news[i]);
-            if (news[i] != -1)
-                seeds[i] = news[i]; // else don't change
-            news[i] = -1;
+
+        // Append news to seeds
+        if (seeds_base == NULL) {
+            seeds_base = news_base;
+        } else {
+            struct Node* seed = seeds_base;
+            while (seed->next != NULL)
+                seed = seed->next;
+            seed->next = news_base;
         }
+        news_base = NULL;
     }
-//28965817 + 1059891351
-    long min_loc = seeds[0];
-    for (int i = 0; i < NUM_SEEDS; i++)
-        if (seeds[i] < min_loc)
-            min_loc = seeds[i];
+
+    long min_loc = seeds_base->start;
+    struct Node* seed = seeds_base;
+    while (seed != NULL) {
+        if (seed->start < min_loc)
+            min_loc = seed->start;
+        seed = seed->next;
+    }
     printf("%ld\n", min_loc);
-    // printf("Maximum value of int: %d\n", INT_MAX);
 
     fclose(fp);
     free(line);
+    while (seeds_base != NULL) {
+        struct Node* temp = seeds_base;
+        seeds_base = seeds_base->next;
+        free(temp);
+    }
     exit(EXIT_SUCCESS);
-}
-
-// void read_seeds(char* line, int seeds[]) {
-//     strtok(line, " ");
-//     for (int i = 0; i < NUM_SEEDS; i++)
-//         seeds[i] = atoi(strtok(NULL, " \n"));
-// }
-
-void read_map(FILE* fp) {
-    // strtok(line, " ");
-    // for (int i = 0; i < NUM_SEEDS; i++)
-    //     seeds[i] = atoi(strtok(NULL, " \n"));
 }
