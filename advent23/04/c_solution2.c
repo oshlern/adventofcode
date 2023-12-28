@@ -21,11 +21,6 @@ void read_ns(char* str, int* ns) {
 }
 
 void score_line(char* line, int* copies) {
-    // printf("%s", line);
-    // for (int i = 1; i<NUM_CARDS; i++) {
-        // total += copies[i];
-        // printf("Card %d: %d copies\n", i, copies[i]);
-    // }
     char* card_str = strtok(line, ":");
     char*  win_str = strtok(NULL, "|");
     char* have_str = strtok(NULL, "\n");
@@ -34,7 +29,6 @@ void score_line(char* line, int* copies) {
     int have_ns[NUM_HAVE];
     strtok(card_str, " ");
     int card_i = atoi(strtok(NULL, ":")) - 1;
-    // printf("-%d copies: %d\n", card_i, copies[card_i]);
 
     read_ns(win_str, win_ns);
     read_ns(have_str, have_ns);
@@ -50,7 +44,6 @@ void score_line(char* line, int* copies) {
     for (int i = 0; i < matches && card_i + i + 1 < NUM_CARDS; i++) {
         copies[card_i+1+i] += copies[card_i];
     }
-    // printf("%d %d copies: %d\n", card_i, matches, copies[card_i]);
 }
 
 
@@ -70,10 +63,8 @@ int main(int argc, char *argv[]) {
         score_line(line, copies);
     
     int total = 0;
-    for (int i = 0; i<NUM_CARDS; i++) {
+    for (int i = 0; i<NUM_CARDS; i++)
         total += copies[i];
-        // printf("Card %d: %d copies\n", i, copies[i]);
-    }
     printf("%d\n", total);
 
     fclose(fp);
