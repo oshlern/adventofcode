@@ -23,6 +23,15 @@ int score_trial(int N, int best) {
     return 0;
 }
 
+void remove_spaces(char* s) {
+    char* d = s;
+    do {
+        while (*d == ' ') {
+            ++d;
+        }
+    } while (*s++ = *d++);
+}
+
 int main(int argc, char *argv[]) {
     FILE* fp;
     char* line = NULL;
@@ -30,25 +39,27 @@ int main(int argc, char *argv[]) {
     ssize_t read;
     fp = fopen(FILENAME, "r");
 
-    int times[N_TRIALS];
     getline(&line, &len, fp);
     strtok(line, ":");
-    for (int i = 0; i < N_TRIALS; i++)
-        times[i] = atoi(strtok(NULL, " "));
+    char* time_str = strtok(NULL, "\n");
+    remove_spaces(time_str);
+    int time = atoi(time_str);
 
-    int dists[N_TRIALS];
     getline(&line, &len, fp);
     strtok(line, ":");
-    for (int i = 0; i < N_TRIALS; i++)
-        dists[i] = atoi(strtok(NULL, " "));
+    char* dist_str = strtok(NULL, "\n");
+    remove_spaces(dist_str);
+    int dist = atoi(dist_str);
+    // int dist;
+    // getline(&line, &len, fp);
+    // strtok(line, ":");
+    // // sscanf(strtok(NULL, "\n"), "%d", &dist);
+    // dist = atoi(strtok(NULL, "\n"), NULL, 10);
 
-    int total = 1;
-    for (int i = 0; i < N_TRIALS; i++) {
-        int score = score_trial(times[i], dists[i]);
-        printf("time: %d, dist: %d, score: %d\n", times[i], dists[i], score);
-        total *= score;
-    }
-    printf("%d\n", total);
+    printf("a %d %d\n", time, dist);
+    int score = score_trial(time, dist);
+
+
 
     fclose(fp);
     free(line);
