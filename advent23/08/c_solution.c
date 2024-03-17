@@ -3,11 +3,12 @@
 #include <stdlib.h>
 #include <regex.h>
 
-const char* FILENAME = "input";
+// const char* FILENAME = "input";
 // const char* FILENAME = "test";
-// const char* FILENAME = "test2";
+const char* FILENAME = "test2";
 
 struct Node {
+    // char name[4], R_name[4], L_name[4];
     char *name, *R_name, *L_name;
     struct Node *R, *L, *next;
 };
@@ -15,48 +16,23 @@ struct Node {
 struct Node* base = NULL;
 
 
-int readLine(char* line) {
+void processLine(char* line) {
+    char name[4], R[4], L[4];
+    strncpy(name, line, 3);
+    strncpy(R, line + 7, 3);
+    strncpy(L, line + 12, 3);
+    name[3] = '\0';
+    R[3] = '\0';
+    L[3] = '\0';
 
-    const char *inputString = "AAA = (BBB, CCC)";
-
-    const char *pattern = "([A-Z]+) = \\(([A-Z]+), ([A-Z]+)\\)";
-
-    regex_t regex;
-    int status = regcomp(&regex, pattern, REG_EXTENDED);
-
-    if (status != 0) {
-        char error_buffer[100];
-        regerror(status, &regex, error_buffer, sizeof(error_buffer));
-        fprintf(stderr, "Regex compilation failed: %s\n", error_buffer);
-        return 1;
-    }
-
-    // Match the regular expression against the input string
-    regmatch_t matches[4];
-    status = regexec(&regex, inputString, 4, matches, 0);
-
-    // Check for a successful match
-    if (status = 0) {
-        // Extract matched groups
-        for (size_t i = 1; i < sizeof(matches) / sizeof(matches[0]); ++i) {
-            if (matches[i].rm_so == -1) {
-                // No match for this group
-                continue;
-            }
-
-            printf("Matched group %zu: %.*s\n", i, (int)(matches[i].rm_eo - matches[i].rm_so), inputString + matches[i].rm_so);
-        }
-    } else if (status == REG_NOMATCH) {
-        fprintf(stderr, "No match found.\n");
-    } else {
-        char error_buffer[100];
-        regerror(status, &regex, error_buffer, sizeof(error_buffer));
-        fprintf(stderr, "Regex matching failed: %s\n", error_buffer);
-    }
-
-    // Free the compiled regular expression
-    regfree(&regex);
+    struct Node* node = (struct Node*) malloc(sizeof(struct Node));
+    node->name = name;
+    node->R_name = R;
+    node->L_name = L;
+    node->next = base;
+    base = node;
 }
+
 
 int main(int argc, char *argv[]) {
     FILE* fp;
@@ -65,31 +41,68 @@ int main(int argc, char *argv[]) {
     ssize_t read;
     fp = fopen(FILENAME, "r");
 
-    read = getline(&line, &len, fp);
-    int instructions[(int) read];
-    for (int i = 0; i < read; i++)
-        instructions[i] = (line[i] == 'R');
+    int n_dirs = ((int) getline(&line, &len, fp)) - 1;
+    line[n_dirs] = '\0'; //replaces '\n'
+    char *dirs = (char *) malloc(n_dirs+1);
+    strcpy(dirs, line);
+    printf("_%s_\n", line);
+    printf("_%s_\n", dirs);
+
 
     getline(&line, &len, fp); // empty row
+    while (getline(&line, &len, fp) != -1)
+        processLine(line);
 
-    // while ((read = getline(&line, &len, fp)) != -1) {
-    //     char* hand = strtok(line, " ");
-    //     int bid = atoi(strtok(NULL, "\n"));
-    //     int score = getScore(hand);
-    //     // printf(hand);
-    //     insertNode(hand, score, bid);
-    // }
-    readLine(line);
+    struct Node *AAA, *ZZZ;
+    struct Node* head1 = base;
+    while (head1 != NULL) {
+        if (strcmp(head1->name, "AAA") == 0)
+            AAA = head1;
+        if (strcmp(head1->name, "ZZZ") == 0)
+            ZZZ = head1;
 
-    // int total = 0;
-    // struct Node* head = base;
-    // for (int rank=1; head != NULL; head = head->next, rank++) {
-    //     printf("%d %s %d\n", rank, head->hand, head->bid);
-    //     total += rank * head->bid;
-    //     free(head->hand);
-    // }
-    // printf("%d\n", total);
+        struct Node* head2 = base;
+        while (head2 != NULL) {
+            if (strcmp(head2->R_name, head1->name) == 0)
+                head2->R = head1;
+            if (strcmp(head2->L_name, head1->name) == 0)
+                head2->L = head1;
+            head2 = head2->next;
+        }
+        head1 = head1->next;
+    }
 
+    struct Node* cur = AAA;
+    int iters = 0;
+    while (cur != ZZZ) {
+        if (cur == NULL) {
+            printf("ouch\n");
+        }
+        if (*(dirs + (iters % n_dirs)) == 'R') {
+            printf("rrrr\n");
+            cur = cur->R;
+        // } else if (*(dirs + (iters % n_dirs)) != 'L') {
+        //     // printf("%d, %d, %s", iters, iters % n_dirs, dirs
+        //     // )
+        //     printf("----------------MISDIRECTION------------------\n");
+        } else {
+            printf("llll\n");
+            cur = cur->L;
+        }
+        iters++;
+    }
+    printf("_%s_\n", dirs);
+
+    printf("%d\n", iters);
+
+
+    struct Node* head = base;
+    while (head != NULL) {
+        struct Node* temp = head;
+        head = head->next;
+        free(temp);
+    }
+    free(dirs);
     fclose(fp);
     free(line);
     exit(EXIT_SUCCESS);
