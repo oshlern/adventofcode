@@ -1,10 +1,12 @@
 import math
-import functools
+from random import randint, randrange
+from functools import cache
+from collections import defaultdict
 
 def pisano_period(n):
-    return math.lcm(*[pi**(ki-1) * pisano_period_p(pi) for pi,ki in prime_factorisation(n)])
+    return math.lcm(*[pi**(ki-1) * pisano_period_p(pi) for pi,ki in prime_factorisation(n).items()])
 
-@functools.cache
+@cache
 def pisano_period_p(p):
     F1, F2 = 1, 1
     iters = 1
@@ -22,49 +24,50 @@ intervals = [out_of_base[i] - out_of_base[i-1] for i in range(1,len(out_of_base)
 intervals.append(out_of_base[0] + w_max - out_of_base[-1])
 # def wheel_factorisation(n):
 def prime_factorisation(n):
-    F = []
+    print("N:", n)
+#     F = []
+    F = defaultdict(int)
     for p in base_ps:
-        if n%p == 0:
-            exp = 1
+        while n%p == 0:
             n //= p
-            while n%p == 0:
-                exp += 1
-                n //= p
-            F.append((p, exp))
+            F[p] += 1
+    print("--- Factored base_ps.")
+    print("F:", F)
     k = out_of_base[1]
     i = 1
-#     while k*k <= n:
     while k**3 <= n:
-        if n%k == 0:
-            exp = 1
+        while n%k == 0:
             n //= k
-            while n%k == 0:
-                exp += 1
-                n //= k
-            F.append((k, exp))
+            F[k] += 1
         k += intervals[i]
         i += 1
         if i == len(intervals):
             i = 0
-    
+    print("--- Wheel factored to n^1/3. k:", k)
+    print("F:", F)
+
     while n > 1:
+        print("Pollard factoring")
         d = pollard_rho(n)
         if not d:
+            print("Failed Pollard, trying MR")
             if miller_rabin_ptest(n, 100):
-                F.append((n, 1))
-                return n
+                print("\t prime")
+                F[n] += 1
+                return F
             else:
+                print("\t composite, trying pollard")
                 for c in range(2,100):
                     d = pollard_rho(n, c)
                     if d:
+                        print("found at c=", c, "d:", d)
                         break
-        n //= d
-        Fs.append(d)
-        
-            
-            
-    if n > 1:
-        F.append((n, 1))
+                if not d:
+                    print("POLLARD FAILED")
+        else:
+            n //= d
+            F[d] += 1
+        print(d)
     return F
 
 
@@ -78,7 +81,7 @@ def pollard_rho(n, c=1):
         x = (x*x + c) % n
         y = (y*y + c) % n
         y = (y*y + c) % n
-        d = math.gcd(math.abs(x-y), n)
+        d = math.gcd(abs(x-y), n)
 
     if d == n: 
         return False
@@ -93,10 +96,13 @@ def miller_rabin_ptest(n, k):
     while not (d & 1):
         d >>= 1
         s += 1
+    
+#     r, s = s, d
 
     for _ in range(k):
-        a = random.randint(2, n - 2)  # n is always a probable prime to base 1 and n − 1
-        x = a*d % n
+        a = randint(2, n - 2)  # n is always a probable prime to base 1 and n − 1
+        x = a**d % n
+        
         for __ in range(s):
             y = x**2 % n
             if y == 1 and x != 1 and x != n - 1: # nontrivial square root of 1 modulo n
