@@ -3,8 +3,40 @@
 # Point = namedtuple("Point", "x y")
 
 
-# remove duplicates
+# remove duplicates, truncate to within walls, remove collinear?
+# Make sure intersection is not overlapping
+
+
+while walls:
+    w = walls.pop()
+    vs = set([intersection(w,u) for u in walls if do_intersect(u,w)])
+#     connect vs by pairs
+
+# for w in walls:
+#     for u in walls:
+#         if w == u: continue
+#         if not v:=intersection(w,u): continue
+#         connect(w,v)
+#         connect(u,v) # not collinear
+
+truncate walls to border
+turn border into 4 walls
+
+for w in walls:
+    vs = set([intersection(w,u) for u in walls if do_intersect(u,w)])
+    sort(vs)
+    connect(vs[i], vs[i+1]) # like set, ignores duplicates
+    
+n_partition = n_cycles(graph)
+return n_partition >= 2
+
+def intersection # symmetric for float precision
+    connect vs by pairs
+# for w in walls:
+ find intersection 
 # trace path to see if it goes through box
+
+# cycle if connected but not by the same guy
 
 def has_partitions(width, height, walls):
     print(walls)
