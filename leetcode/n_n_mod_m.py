@@ -1,34 +1,48 @@
+# https://www.codewars.com/kata/638b4205f418c4ab857f2692/train/python
+
+import math
+
 import math
 
 def f(m:int) -> int:
     print(m)
     out = 1
-    max_pow = 0
+    pows = {}
     pow_k = 1
     
     i = 2
     m, m_rt3, pow, cube_steps = decrement_and_rt3(m, i)
     if pow:
-        max_pow = max(max_pow, pow*pow_k)
+        pows[i] = pow
         out *= i
     pow_k *= 3**cube_steps
     i = 3
-    while i < m_rt3:
+    while i <= m_rt3:
         if m % i == 0:
             m, m_rt3, pow, cube_steps = decrement_and_rt3(m, i)
-            max_pow = max(max_pow, pow*pow_k)
+            pows[i] = pow * pow_k
             out *= i
             pow_k *= 3**cube_steps
         i += 2
     if m != 1:
         if (m_sq := m**0.5) % 1 == 0:
             out *= m_sq
-            max_pow = max(max_pow, 2*pow_k)
+            pows[m_sq] = 2*pow_k
             m = 1
 
     out *= m
-    if out < max_pow:
-        out *= math.ceil(max_pow / out)
+
+    
+    if pows:
+        pi, max_pow = max(pows.items(), key=lambda x: x[1])
+        if out < max_pow:
+            while math.ceil(max_pow / out) > pi:
+                pows[pi**2] = math.ceil(pows[pi]/2)
+                del pows[pi]
+                pi, max_pow = max(pows.items(), key=lambda x: x[1])
+
+            out *= math.ceil(max_pow / out)
+    print(out)
     return out
 
 def decrement_and_rt3(m, i):
@@ -44,6 +58,7 @@ def decrement_and_rt3(m, i):
     else:
         m_rt3  = 1
     return m, m_rt3, pow, cube_steps
+
 
 # def f(m:int) -> int:
 #     M = m
