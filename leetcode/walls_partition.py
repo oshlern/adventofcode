@@ -53,20 +53,20 @@ Point = namedtuple("Point", "x y")
 #     (p - A)
 
 def intersection(w, u): # sort
-(A,B), (C,D) = sorted([w, u])
-# det = lambda A, B: A.x*B.y - A.y*B.x
-dist = lambda A, B: ((A.x-B.x)**2 + (A.y-B.y)**2)**0.5
-on_segment = lambda p, A, B: dist(A,p) + dist(p, B) == dist(A,B)
-det = lambda A, B: A[0]*B[1] - A[1]*B[0]
-on_segment = lambda p, A, B: abs(det((p.x-A.x, p.y-A.y), (p.x-B.x, p.y-B.y))) < 1e-16 and (A.x<=p.x<=B.x or A.x>=p.x>=B.x) and (A.y<=p.y<=B.y or A.y>=p.y>=B.y) 
-x_diffs = (A.x-B.x, C.x-D.x)
-y_diffs = (A.y-B.y, C.y-D.y)
-denom = det(x_diffs, y_diffs)
-if denom != 0:
-d = (det(A,B), det(C,D))
-p = Point(det(d, x_diffs) / denom, det(d, y_diffs) / denom)
-    if on_segment(p, A, B) and on_segment(p, C, D):
-        return p
+    (A,B), (C,D) = sorted([w, u])
+    # det = lambda A, B: A.x*B.y - A.y*B.x
+    dist = lambda A, B: ((A.x-B.x)**2 + (A.y-B.y)**2)**0.5
+    on_segment = lambda p, A, B: dist(A,p) + dist(p, B) == dist(A,B)
+    det = lambda A, B: A[0]*B[1] - A[1]*B[0]
+    # on_segment = lambda p, A, B: abs(det((p.x-A.x, p.y-A.y), (p.x-B.x, p.y-B.y))) < 1e-16 and (A.x<=p.x<=B.x or A.x>=p.x>=B.x) and (A.y<=p.y<=B.y or A.y>=p.y>=B.y) 
+    x_diffs = (A.x-B.x, C.x-D.x)
+    y_diffs = (A.y-B.y, C.y-D.y)
+    denom = det(x_diffs, y_diffs)
+    if denom != 0:
+        d = (det(A,B), det(C,D))
+        p = Point(det(d, x_diffs) / denom, det(d, y_diffs) / denom)
+        if on_segment(p, A, B) and on_segment(p, C, D):
+            return p
     else:
         if on_segment(A, C, D): return A
         if on_segment(B, C, D): return B
@@ -76,30 +76,23 @@ p = Point(det(d, x_diffs) / denom, det(d, y_diffs) / denom)
 
 
 
-def intersection2(w, u): # sort
-    (A,B), (C,D) = sorted([w, u])
-    AB = Point(A.x - B.x, A.y - B.y)
-    CD = Point(C.x - D.x, C.y - D.y)
-    BD = Point(B.x - D.x, B.y - D.y)
-    denom  = AB.y*CD.x - AB.x*CD.y
-    numer  = AB.y*BD.x - AB.x*BD.y
-    numer2 = CD.y*BD.x - CD.x*BD.y
-    if denom == 0: # parallel
-        if numer != 0 or numer2 != 0: return False # not colinear
-        # Find where C,D fall along line AB
-        magAB = AB.x*AB.x+AB.y*AB.y
-        tC = ((C.x-B.x)*AB.x + (C.y-B.y)*AB.y) # (C - B) * (A-B)   /|AB|^2
-        tD = ((D.x-B.x)*AB.x + (D.y-B.y)*AB.y) # (D - B) * (A-B)   /|AB|^2
+def intersection2(w, u):
+    (A,B), (C,D) = w, u
+    dist = lambda A, B: ((A.x-B.x)**2 + (A.y-B.y)**2)**0.5
+    on_segment = lambda p, A, B: abs(dist(A,p) + dist(p, B) - dist(A,B)) < 1e-10
+    det = lambda A, B: A[0]*B[1] - A[1]*B[0]
+#     on_segment = lambda p, A, B: abs(det((p.x-A.x, p.y-A.y), (p.x-B.x, p.y-B.y))) < 1e-10 and (A.x<=p.x<=B.x or A.x>=p.x>=B.x) and (A.y<=p.y<=B.y or A.y>=p.y>=B.y) 
 
-        options = [] # find all endpoints within the intersection
-        if 0<=tC<=magAB: options.append(C)
-        if 0<=tD<=magAB: options.append(D)
-        if min(tC,tD)<=0<=max(tC,tD): options.append(B)
-        if min(tC,tD)<=magAB<=max(tC,tD): options.append(A)
-        return min(options) if options else False # min not necessary
+    x_diffs = (A.x-B.x, C.x-D.x)
+    y_diffs = (A.y-B.y, C.y-D.y)
+    denom = det(x_diffs, y_diffs)
+    if denom != 0:
+        d = (det(A,B), det(C,D))
+        px = round(det(d, x_diffs) / denom, 14)
+        py = round(det(d, y_diffs) / denom, 14)
+        ps = [Point(px, py)]
+    else:
+        ps = [A,B,C,D]
 
-    t = numer / denom
-    t2 = numer2 / denom
-    if not (0<=t<=1 and 0<=t2<=1): return False
-    p = Point(round(D.x + t*CD.x, 10), round(D.y + t*CD.y, 10))
-    return p
+    ps = [p for p in ps if on_segment(p, A, B) and on_segment(p, C, D)]
+    return min(ps) if ps else False
