@@ -135,4 +135,4 @@ def last_digit(lst, m=10):
             case 3:                                     # e%2 determines if (3^e)%4 = 3 or 1
                 return 3 if last_digit(lst, 2) else 1
     elif m == 2:
-        return b % 2 # (b^e)%2 = (b)%2  note: ruled out e=0 earlier
+        return b % 2 # (b^e)%2 = (b)%2  note: ruled out e=0 earlierg
