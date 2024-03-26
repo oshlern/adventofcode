@@ -6,79 +6,30 @@ def tower(b, h, m):
     if m == 1: return 0
     if b == 1 or h == 0: return 1
     if h == 1: return b % m
-    print(m, factors(m))
     return CRT([(p_tower(b, h, p, k), p**k) for p,k in factors(m)])
 
-def p_tower(b, h, p, k): # b^b^b % p^k
-    print("p tower", b, h, p, k)
+def p_tower(b, h, p, k): # tower(b, h, p^k)
     B = b % (p**k)
-    if B == 0: return 0
-    if B == 1: return 1
-    if h == 1: return B
+    if B <= 1 or h == 1: return B
     if B % p == 0:
-        r = 0
-        a = B
-        while a % p == 0:
-            a //= p
-            r += 1
-#         if r >= k: return 0
+        B, r = divide_repeatedly(B, p)
+        E = 1
+        if any((E:=b**E) * r >= k for i in range(h-1)): return 0
+        return pow(B, E, p**(k-E*r)) * p**(E*r)                    # (a * p^r) ^ e % p^k = a^e % p^(k-r*e) * p^(r*e)
 
-        e = b
-        print("p^r tower", b, h, p, k, r)
-
-        if e*r >= k: return 0
-        for i in range(h-2):
-            e = e**b
-            if r*e >= k: return 0
-        print("p^r tower", b, h, p, k)
-        print("\t", r, a, e, pow(a, e, p**(k-r*e)) * p**(r*e))
-#         (a * p^r) ^ e % p^k = a^e % p^(k-r*e) * p^(r*e)
-        return pow(a, e, p**(k-r*e)) * p**(r*e)
-    
-    out = 1    
+    out = 1
     for i in range(max(0,k-h), k):
         exp = CRT([(tower(b, h-k + i, p-1), p-1), (out, p**i)])
-        print("exp", i, h-k, exp)
         out = pow(b, exp, p**(i+1))
-    print("p tower", b, h, p, k, out)
     return out
-
-def gt_tower(b,h,thresh):
-    if b <= 1: return b > thresh
-    t = 1
-    for i in range(h):
-        t *= b
-        if t > thresh:
-            return True
-    return False
-
-#     if h == 0:
-#         return 1 > thresh
-#     else
-
 
 def factors(m):
     fs = []
     for i in range(2, int(m**0.5)+1):
-        k = 0
-        while m % i == 0:
-#             print(i,m)
-            m //= i
-            k += 1
+        m, k = divide_repeatedly(m, i)
         if k: fs.append((i, k))
     if m != 1: fs.append((m, 1))
     return fs
-
-# def factors(m):
-#     return [(p, n_powers(m,p)) for p in range(2,m) if m%p==0]
-def n_powers(m, p):
-    pow = 0
-    while m % p == 0:
-        m //= p
-        pow += 1
-    return pow
-
-# print(factors(120))
 
 def CRT(bs_ns):
     N = math.prod(n for b,n in bs_ns)
@@ -89,6 +40,14 @@ def Beizout(a,b): # find x,y s.t. ax+by=gcd(a,b)
     q, r = divmod(a,b)
     x, y, g = Beizout(b, r)
     return y, x-y*q, g
+
+def divide_repeatedly(m, p):
+    r = 0
+    while m % p == 0:
+        m //= p
+        r += 1
+    return m, r
+    
 
 # print(Beizout(3,17))
 # print(CRT([(1,4),(2,5),(4,7)]))
