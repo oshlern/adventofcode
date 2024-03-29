@@ -1,11 +1,13 @@
 # https://www.codewars.com/kata/57ff9d3b8f7dda23130015fa/train/pythonfrom preloaded import open
-
 from preloaded import open
+# import copy
+import bisect
 
 def solve_mine(map, n):
-    m = Map(map, debug=False)
-    while (q := m.find_empty()) is not None:
-#         print("map", q)
+    m = Map(map, num_mines=n, debug=False)
+    while (q := m.get_next()) is not None:
+#         m.get_next_exhaustive()
+#         print(q)
 #         print(m)
         num = open(q[0], q[1])
         m.mark_opened(q, num)
@@ -13,15 +15,19 @@ def solve_mine(map, n):
     s = str(m)
     if '?' not in s:
         return s
+    print(s)
     return '?'    
 
 class Map:
-    def __init__(self, map, debug=False):
+    def __init__(self, map, num_mines, debug=False):
         self.map = [[c for c in r.split(' ')] for r in map.split('\n')]
         self.h, self.w = len(self.map), len(self.map[0])
-#         self.qs = []
+        self.unsearched_qs = set(self.get_border_qs())
         self.marked_stack = []
-        self.empties = []
+        self.empties, self.bombs = [], []
+#         self.num_marked_bomb = 0#sum([1 for r in map for c in r if c =='x'])
+        self.num_mines = num_mines
+        self.num_unmarked = map.count('?')
         self.debug = debug
         
     def mark_empty(self, q):
@@ -34,6 +40,7 @@ class Map:
             print(self)
         self.map[q[0]][q[1]] = 'o'
         self.marked_stack.append(q)
+        self.empties.append((q, self.save_level()))
     
     def mark_bomb(self, q):
         if self.map[q[0]][q[1]] != '?':
@@ -44,26 +51,35 @@ class Map:
             print(self)
         self.map[q[0]][q[1]] = 'x'
         self.marked_stack.append(q)
+        self.bombs.append((q, self.save_level()))
 
     def mark(self, q, is_bomb):
         if self.map[q[0]][q[1]] != '?':
             print("\n\n--------BAD mark--------\n\n")
-            print(q, self.qs)
+            print(q, is_bomb, self.marked_stack)
+            print(self)
             1/0
+        val = 'x' if is_bomb else 'o'
         if self.debug:
             print("marking", q, val)
             print(self)
-        val = 'x' if is_bomb else 'o'
         self.map[q[0]][q[1]] = val
         self.marked_stack.append(q)
         if not is_bomb:
             self.empties.append((q, self.save_level()))
+        else:
+            self.bombs.append((q, self.save_level()))
 
     def unmark(self, level):
+#         self.empties = bisect.bisect_right()
         while len(self.marked_stack) > level:
             q = self.marked_stack.pop()
+#             if v == 'o':
+#                 self.empties.remove
+#             for i in range()
             self.map[q[0]][q[1]] = '?'
         self.empties = [(q,l) for q,l in self.empties if l <= level]
+        self.bombs = [(q,l) for q,l in self.bombs if l <= level]
             
 #         qs = self.marked_stack[level:]
 
@@ -136,12 +152,12 @@ class Map:
     def feasible_queue(self, queue): # leaves map in example feasible state, or return False and reset
         if not queue:
             if self.debug:
-                print("NONE", q)
+                print("NONE")
                 print(self)
             return self.check_filled()
         level = self.save_level()
         for q in queue:
-            if self.map[q[0]][q[1]] != '?': [print("Checking non ?", q), 1/0]
+            if self.map[q[0]][q[1]] != '?': continue #[print("Checking non ?", q), 1/0]
             
             self.mark_bomb(q)
             if self.propagate_queue(q, next_queue:=set()) and self.feasible_queue(next_queue): continue
@@ -155,7 +171,10 @@ class Map:
         return True
 
     def check_filled(self):
-        return True
+        mines_left = self.num_mines - len(self.bombs)
+        unmarked_left = self.num_unmarked - len(self.marked_stack)
+#         print(mines_left, unmarked_left)
+        return 0 <= mines_left <= unmarked_left
     
     def ns_near(self, q):
         for n in self.neighbors(q):
@@ -177,10 +196,15 @@ class Map:
 
     def get_border_qs(self):
         return [(i, j) for i in range(self.h) for j in range(self.w) if self.map[i][j] == '?' and self.ns_near((i,j))]
-#         for i in range(self.h):
-#             for j in range(self.w):
-#                 if self.map[i][j] == '?' and self.ns_near((i,j)):
-#                     qs.append((i, j))
+
+    def get_q(self):
+        for i in range(self.h):
+            for j in range(self.w):
+                if self.map[i][j] == '?':
+                    return (i, j)
+
+    def get_qs(self):
+        return [(i, j) for i in range(self.h) for j in range(self.w) if self.map[i][j] == '?']
 
     def neighbors(self, loc):
         ns = []
@@ -220,8 +244,9 @@ class Map:
                         return q
     
     def mark_opened(self, loc, num):
-        print("marked open", loc, num, "was", self.map[loc[0]][loc[1]])
+#         print("marked open", loc, num, "was", self.map[loc[0]][loc[1]])
         self.map[loc[0]][loc[1]] = str(num)
+        self.unsearched_qs.update(self.find_affected_qs(loc))
 
     def __str__(self):
         return '\n'.join(' '.join(r) for r in self.map)
@@ -254,12 +279,11 @@ class Map:
         return seen_qs
             
             
-    def expand_all(self):
-        if self.new_n:
-            qs = self.find_affected_qs(self.new_n)
-            self.new_n = None
-        else:
-            qs = self.get_border_qs()
+    def get_next(self):
+        if self.empties:
+            q, level = self.empties.pop()
+            return q
+        qs = self.unsearched_qs
         forced = set()
         seen_as_bomb, seen_as_empty = set(), set()
         seen = {True: set(), False: set()}
@@ -271,43 +295,110 @@ class Map:
                     self.mark(q, is_bomb)
     #                 propagate, get neighbors. feasible, get neighbors
                     if self.propagate_queue(q, queue:=set()) and self.feasible_queue(queue):
-                        for Q in stack[level+1:]:
+                        for Q in self.marked_stack[level:]:
                             seen[self.map[Q[0]][Q[1]] == 'x'].add(Q)
                         self.unmark(level)
                     else:
                         self.unmark(level)
                         self.mark(q, not is_bomb)
                         self.propagate(q)
-                        for Q in stack[level+1:]:
+                        for Q in self.marked_stack[level:]:
 #                             seen[self.map[Q[0]][Q[1]] == 'x'].add(Q)
                             forced.add(Q)
                         level = self.save_level()
+        self.unsearched_qs = set()
+        if self.empties:
+            q, level = self.empties.pop()
+            return q
+        
+        return self.get_next_exhaustive()
 
+    def feasible_exhaustive(self): # leaves map in example feasible state, or return False and reset
+        if not self.check_filled(): return False
+        level = self.save_level()
+        q = self.get_q()
+        if q is None:
+            if self.debug:
+                print("NONE", q)
+                print(self)
+            return True
+        
+            
+        if self.map[q[0]][q[1]] != '?': [print("Checking non ?", q), 1/0]
+
+        self.mark_bomb(q)
+        if self.propagate(q) and self.feasible_exhaustive(): return True
+        self.unmark(level)
+
+        self.mark_empty(q)
+        if self.propagate(q) and self.feasible_exhaustive(): return True
+        self.unmark(level) # maybe skip?
+
+        return False
+    
+    def get_next_exhaustive(self):
+        if self.empties:
+            q, level = self.empties.pop()
+            return q
+        print("get exhaustive")
+        print(self)
+        qs = self.get_qs()
+        forced = set()
+        seen_as_bomb, seen_as_empty = set(), set()
+        seen = {True: set(), False: set()}
+        level = self.save_level()
+        for q in qs:
+            for is_bomb in [True, False]:
+                if q in forced: continue
+                if q not in seen[is_bomb]:
+                    self.mark(q, is_bomb)
+    #                 propagate, get neighbors. feasible, get neighbors
+                    if self.propagate(q) and self.feasible_exhaustive():
+                        for Q in self.marked_stack[level:]:
+                            seen[self.map[Q[0]][Q[1]] == 'x'].add(Q)
+                        self.unmark(level)
+                    else:
+                        self.unmark(level)
+                        self.mark(q, not is_bomb)
+                        self.propagate(q)
+                        for Q in self.marked_stack[level:]:
+#                             seen[self.map[Q[0]][Q[1]] == 'x'].add(Q)
+                            forced.add(Q)
+                        level = self.save_level()
+        self.unsearched_qs = set()
+        if self.empties:
+            q, level = self.empties.pop()
+            return q
+        print("failed exhaustive search")
+#         def find_empty(self):
 #         level = self.save_level()
 #         for i in range(self.h):
 #             for j in range(self.w):
 #                 q = (i, j)
+#                 if self.map[i][j] == 'o': return q
 #                 if self.map[i][j] == '?' and self.ns_near(q):
-# #                     if self.debug: print('\n\n\nTrying', q)
+#                     if self.debug: print('\n\n\nTrying', q)
 #                     self.mark_bomb(q)
 #                     valid = self.propagate(q) and self.feasible()
 #                     self.unmark(level)
+#                         # don't reset
+# #                     if (i,j) == (1,1): self.debug = False
+
+# #                     print(i, j, self.ns_near((i,j)))
+# #                     for n in self.ns_near((i,j)):
+# #                         print(n, self.map[n[0]][n[1]])
+# #                     print("empty stat", self.mark_empty((i,j)))
 #                     if not valid:
 #                         self.mark_empty(q)
 #                         if not self.propagate(q):
 #                             print("CONTRADICTION")
 #                             1/0
-#                         continue
+#                         return q
+#         leftover_qs = [(i,j) for i in range(self.h) for j in range(self.w) if self.map[i][j] == '?']
+#         self.unsearched_qs = self.get_border_qs()
+        
+#         if '?' in str(self):
+#             return '?'
+#         return str(self)
 
-#                     self.mark_empty(q)
-#                     valid = self.propagate(q) and self.feasible()
-#                     self.unmark(level)
-#                     if not valid:
-#                         self.mark_bomb(q)
-#                         if not self.propagate(q):
-#                             print("CONTRADICTION")
-#                             1/0
 
-#         return None
-
-#     def is_finished()
