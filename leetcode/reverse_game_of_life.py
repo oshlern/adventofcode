@@ -1,4 +1,4 @@
-
+# https://www.codewars.com/kata/5ea6a8502186ab001427809e/train/python
 def find_predecessor(goal: list[list[int]]) -> list[list[int]]:
     m = Map(goal)
     if m.is_feasible():
@@ -17,6 +17,7 @@ class Map:
         self.unknown = {loc for loc in self.g}
         self.alive = set()
         self.dead = set()
+        self.neighbors = {loc: neighbors(loc)&self.g for loc in self.g}
         self.marked_stack = []
         self.queue = list(self.squares_iterator())
         self.counter = 0
@@ -29,42 +30,21 @@ class Map:
             if not self.queue: return True
             loc = self.queue.pop()
             popped.append(loc)
-#         print(self)
-#         print(loc)
+
         save = self.get_save()
         if self.mark(loc, 1) and self.is_feasible(): return True
         self.reset(save)
         if self.mark(loc, 0) and self.is_feasible(): return True
         self.reset(save)
-        self.queue.append(loc)
-        
+
         while popped:
             self.queue.append(popped.pop())
         return False
-
-    def get_next_unknown(self):
-        for i in range(self.height):
-            for j in range(-1, self.width+1):
-                loc = (i,j)
-#         for loc in self.squares_iterator():
-                if loc in self.unknown:
-                    return loc
-
-    def squares_iterator(self):
-        for k in range(max(self.height, self.width)-1,-1,-1):
-            if k < self.width:
-                for i in range(min(k, self.height)):
-                    yield (i,k)
-            if k < self.height:
-                for j in range(min(k, self.width),-1,-1):
-                    yield (k,j)
-#                 sqrt()
 
     def get_save(self):
         return len(self.marked_stack)
 
     def reset(self, save):
-#         print(len(self.unknown))
         for _ in range(len(self.marked_stack)-save):
             loc = self.marked_stack.pop()
             if loc in self.alive:
@@ -72,29 +52,13 @@ class Map:
             else:
                 self.dead.remove(loc)
             self.unknown.add(loc)
-#         print(len(self.unknown))
-    #     marked stack level
-    #     checked
 
-
-    # order by number of degrees of freedom? weird when dual edged
     def check_and_propagate(self, g_locs):
         queue = set()
         for g_loc in g_locs:
-    #         if g_loc in checked: continue
-
-    
-            if g_loc in self.alive:
-                min_l, max_l = 2, 3
-            elif g_loc in self.dead:
-                min_l, max_l = 3, 3
-            if g_loc in self.unknown:
-#                 if g_loc in g_alive:
-                min_l, max_l = 2, 3
-#                 else:
-#                 print("checking unknown")
-                # what if its in unknown? TODO
-            ns = neighbors(g_loc)
+            min_l, max_l = 2, 3
+            if g_loc in self.dead: min_l = 3
+            ns = self.neighbors[g_loc]
             ns_unknown = ns & self.unknown
             ns_alive   = ns & self.alive
             n_live = len(ns_alive)
@@ -116,9 +80,11 @@ class Map:
                     if n_live >= min_l and n_live + n_left == max_l+1:
                         if not self.mark(ns_unknown, True):
                             return False
-                    elif n_live == min_l-1 and n_live + n_left <= max_l:
-                        if not self.mark(ns_unknown, False):
-                            return False
+                    else:
+                        if g_loc in self.unknown: min_l = 3
+                        if n_live == min_l-1 and n_live + n_left <= max_l:
+                            if not self.mark(ns_unknown, False):
+                                return False
         return True
         
 
@@ -133,8 +99,17 @@ class Map:
         ns = set()
         for loc in locs:
             ns.add(loc)
-            ns |= neighbors(loc)
-        return self.check_and_propagate(ns & self.g)
+            ns |= self.neighbors[loc]
+        return self.check_and_propagate(ns)
+
+    def squares_iterator(self):
+        for k in range(max(self.height, self.width)-1,-1,-1):
+            if k < self.width:
+                for i in range(min(k, self.height)):
+                    yield (i,k)
+            if k < self.height:
+                for j in range(min(k, self.width),-1,-1):
+                    yield (k,j)
 
     def export(self):
         return [[1 if (i,j) in self.alive else 0 if (i,j) in self.dead else -8 for j in range(self.width)] for i in range(self.height)]
