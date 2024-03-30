@@ -1,29 +1,72 @@
 # https://www.codewars.com/kata/5ea6a8502186ab001427809e/train/python
-neighbors = lambda loc: {(loc[0]+di, loc[1]+dj) for di in [-1,0,1] for dj in [-1,0,1]} - {loc}
+
+neighbors = lambda loc: {(loc[0]+di, loc[1]+dj) for di in [-1,0,1] for dj in [-1,0,1]}
 
 def find_predecessor(goal: list[list[int]]) -> list[list[int]]:
-    goal = {(i,j): goal[i][j] for i in range(len(goal)) for j in range(len(goal[0]))}
-#     predecesor has coords -1,-1 to h+1,w+1
-# gs_neighbors ws_neighbors (no need, using set intersections)
-    pass
+    height, width = len(goal), len(goal[0])
+    g = {(i,j) for i in range(height) for j in range(width)}
+    g_alive = {loc for loc in g if goal[loc[0]][loc[1]] == 1}
+    g_dead = {loc for loc in g if goal[loc[0]][loc[1]] == 0}
+    w_unknown = {(i,j) for i in range(-1,height+1) for j in range(-1,width+1)}
+    w_alive = set()
+    w_dead = set()
+#     checked = set()
+    marked_stack = []
 
-def num_alive(g_loc):
-    len(neighbors(g_loc) & w_alive)
-def num_unkown(g_loc):
-    len(neighbors(g_loc) & w_unknown)
-def g_neighbors(w_loc): return neighbors(w_loc) & g_locs
+    if is_feasible():
+        return [1 if (i,j) in w_alive else 0 for i in range(-1,height+1) for j in range(-1,width+1)]
+
+def is_feasible():
+#     while level loc_in  level=0  skip ahead squares iterator
+    w_loc = get_next_unknown()
+    if w_loc is None: return True
+    save = get_save()
+    if mark_alive(w_loc) and is_feasible(): return True
+    reset(save)
+    if mark_dead(w_loc) and is_feasible(): return True
+    reset(save)
+    return False
+
+def get_next_unknown():
+    for loc in squares_iterator(height, width):
+        if loc in w_unknown:
+            return loc
+def squares_iterator():#(height, width):
+    for k in range(max(height, width)):
+        if k < width:
+            for i in range(min(k, height)):
+                yield (i,k)
+        if k < height:
+            for j in range(min(k, width),-1,-1):
+                yield (k,j)
+#             sqrt()
+
+def get_save():
+    return len(marked_stack)
+
+def reset(save):
+    for _ in range(len(marked_stack)-save):
+        loc = marked_stack.pop()
+        w_alive.remove(loc)
+        w_dead.remove(loc)
+        w_unknown.add(loc)
+#     marked stack level
+#     checked
 
 
-checked = set()
 # order by number of degrees of freedom? weird when dual edged
 def check_and_propagate(g_locs):
     queue = set()
-    for g_loc in g_neighbors(w_loc) - checked:
+    for g_loc in g_locs:
+#         if g_loc in checked: continue
+
         if g_loc in w_alive:
             min_l, max_l = 2, 3
-        else:
+        elif g_lov in w_dead:
             min_l, max_l = 3, 3
-        
+        else:
+            print("checking unknown")
+            # what if its in w_unknown?
         ns = neighbors(g_loc)
         ns_unknown = ns & w_unknown
         ns_alive   = ns & w_alive
@@ -32,29 +75,49 @@ def check_and_propagate(g_locs):
         if g_loc in g_alive:
             if n_live > max_l or n_live + n_left < min_l:
                 return False
-            elif n_live == max_l:
-                w_set(n_left to dead)
-            elif n_live+n_left == min_l:
-                w_set(n_left to alive)
+            else:
+#                 checked.add(g_loc)
+                if n_live == max_l:
+                    w_set(ns_unknown, to_alive=False)
+                elif n_live+n_left == min_l:
+                    w_set(ns_unknown, to_alive=True)
 #             else:
 #                 queue.update(ns_unknown)
         elif g_loc in g_dead:
             if n_live >= min_l and n_live + n_left <= max_l:
                 return False
-            elif n_live >= min_l and n_live + n_left == max_l+1:
-                w_set(n_left to alive)
-            elif n_live == min_l-1 and n_live + n_left <= max_l:
-                w_set(n_left to dead)
+            else:
+#                 checked.add(g_loc)
+                if n_live >= min_l and n_live + n_left == max_l+1:
+                    w_set(ns_unknown, to_alive=True)
+                elif n_live == min_l-1 and n_live + n_left <= max_l:
+                    w_set(ns_unknown, to_alive=False)
 #             else:
 #                 queue.update(ns_unknown)
 #     return queue
 
 def w_set(w_locs, to_alive):
-    assert w_unknown.issuperset(w_locs)
-    w_unknown.difference_update(w_locs)
-    w_alive.update(w_locs)
+    assert w_locs.issubset(w_unknown)
+    w_unknown -= w_locs
+    if to_alive:
+        w_alive += w_locs
+    else:
+        w_dead += w_locs
+    marked_stack.extend(w_locs)
+    to_check = g & neighbors(w_locs) # union
+#     checked -= to_check
+    check_and_propagate(to_check)
+
+# def w_set_one(w_loc, to_alive):
+#     assert w_loc in w_unknown
+#     w_unknown.remove(w_loc)
+#     if to_alive:
+#         w_alive.add(w_locs)
+#     else:
+#         w_dead.add(w_locs)
+#     checked -= neighbors(w_loc) 
     
-    
+
 
 # try open
 # go forth
@@ -76,6 +139,3 @@ def w_set(w_locs, to_alive):
 
 
 # default to guessing existing state?
-
-
-
