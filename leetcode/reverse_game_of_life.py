@@ -1,3 +1,4 @@
+# https://www.codewars.com/kata/5ea6a8502186ab001427809e/train/python
 neighbors = lambda loc: {(loc[0]+di, loc[1]+dj) for di in [-1,0,1] for dj in [-1,0,1]} - {loc}
 
 def find_predecessor(goal: list[list[int]]) -> list[list[int]]:
@@ -12,22 +13,48 @@ def num_unkown(g_loc):
     len(neighbors(g_loc) & w_unknown)
 def g_neighbors(w_loc): return neighbors(w_loc) & g_locs
 
-def could_be_alive(w_loc): # move checks into propagate
-    assert w_loc in w_unknown
-    for g_loc in g_neighbors(w_loc):
-        n_live = len(neighbors(g_loc) & w_alive)
-        n_left = len(neighbors(g_loc) & w_unknown)
+
+checked = set()
+# order by number of degrees of freedom? weird when dual edged
+def check_and_propagate(g_locs):
+    queue = set()
+    for g_loc in g_neighbors(w_loc) - checked:
         if g_loc in w_alive:
             min_l, max_l = 2, 3
         else:
             min_l, max_l = 3, 3
+        
+        ns = neighbors(g_loc)
+        ns_unknown = ns & w_unknown
+        ns_alive   = ns & w_alive
+        n_live = len(ns_alive)
+        n_left = len(ns_unknown)
         if g_loc in g_alive:
-            return n_live+1         <= max_l and n_live+1+n_left-1 >= min_l
-        else:
-            assert g_loc in g_dead
-            return n_live+1+n_left-1 > max_l or  n_live+1           < min_l
-            if g_loc in w_alive:
-            min_
+            if n_live > max_l or n_live + n_left < min_l:
+                return False
+            elif n_live == max_l:
+                w_set(n_left to dead)
+            elif n_live+n_left == min_l:
+                w_set(n_left to alive)
+#             else:
+#                 queue.update(ns_unknown)
+        elif g_loc in g_dead:
+            if n_live >= min_l and n_live + n_left <= max_l:
+                return False
+            elif n_live >= min_l and n_live + n_left == max_l+1:
+                w_set(n_left to alive)
+            elif n_live == min_l-1 and n_live + n_left <= max_l:
+                w_set(n_left to dead)
+#             else:
+#                 queue.update(ns_unknown)
+#     return queue
+
+def w_set(w_locs, to_alive):
+    assert w_unknown.issuperset(w_locs)
+    w_unknown.difference_update(w_locs)
+    w_alive.update(w_locs)
+    
+    
 
 # try open
 # go forth
@@ -49,5 +76,6 @@ def could_be_alive(w_loc): # move checks into propagate
 
 
 # default to guessing existing state?
+
 
 
