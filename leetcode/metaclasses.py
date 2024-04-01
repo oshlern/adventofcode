@@ -1,74 +1,22 @@
-# class Setter:
-#     def __init__(self, thing):
-#         self.thing = thing
-
-#     def __getattr__(self, s):
-#         self.thing.set(s)
-#         return self.thing
-# #     metaclass, all same except .set()
-
-# class SetNotter:
-#     def __init__(self, thing):
-#         self.thing = thing
-
-#     def __getattr__(self, s):
-#         self.thing.setNot(s)
-#         return self.thing
-
-# class Creator:
-#     def __init__(self, thing, n):
-#         self.thing = thing
-#         self.n = n
-
-#     def __getattr__(self, name):
-#         if self.n == 1:
-#             t = Thing(name)
-#         else:
-#             t = ThingList(name, n)
-#         self.thing._has(t)
-#         return self.thing
-    
-# # class Helper(type):
-# # class Factory:
-# #     def __init__(self):
-# #         self.ctr = 0
-        
-# def makeClass(name, thing, callback):
-# #     self.ctr += 1
-# #     name = self.ctr
-#     def callbacker(self, s):
-#         callback(s)
-#         return thing
-#     c = type(name, (), {"__getattr__": callbacker})
-# #         cls_instance = super().__new__(cls, name, bases, dct)
+from typing import Iterable, Sequence
 
 class Callbacker:
-    def __init__(self, return_val, callback_fn, **kargs):
-        self.return_val = return_val
+    def __init__(self, callback_fn, **kargs):
         self.callback_fn = callback_fn
         self.kargs = kargs
-
     def __getattr__(self, s):
-        self.callback_fn(s, **self.kargs)
-        return self.return_val
+        return self.callback_fn(s, **self.kargs)
 
 class Thing:
-    # TODO: make the magic happen
     def __init__(self, name):
         self.name = name
-#         self.attributes = set()
-#         self.is_a = Setter(self)
-        self._is_list = set()
-        self.is_a = Callbacker(self, lambda s: self._is_list.add(s))
-        self._is_not_list = set()
-        self.is_not_a = Callbacker(self, lambda s: self._is_not_list.add(s))
-        
-        
-#         self._is_amakeClass("Setter", self, )
-#         self.not_attributes = set()
-#         self.is_not_a = SetNotter(self)
-        self.has = lambda n: Callbacker(self, self._has, n=n)
-    
+        self.is_a = Callbacker(self._is_a)
+        self.is_not_a = Callbacker(self._is_not_a)
+        self.is_the = Callbacker(lambda x_of: Callbacker(lambda s: self._is_the(x_of, s)))
+        self.being_the = self.and_the = self.is_the
+        self.has = self.having = lambda n: Callbacker(self._has, n=n)
+        self.can = Callbacker(lambda verb: lambda method, archive=None: self._can(verb, method, archive))
+
     def __getattr__(self, name):
         if name.startswith("is_a_"):
             x = name[5:]
@@ -77,41 +25,57 @@ class Thing:
             elif x in self._is_not_list:
                 return False
             assert False
-            
-#     def _is_a(self, at):
-#         self._is_list.add(at)
+
+    def _is_a(self, s):
+        setattr(self, 'is_a_'+s, True)
+        return self
+
+    def _is_not_a(self, s):
+        setattr(self, 'is_a_'+s, False)
+        return self
+
+    def _is_the(self, x_of, s):
+        setattr(self, x_of, s)
+        return self
+
+    def _has(self, s, n):
+        if n == 1:
+            t = Thing(s)
+        else:
+            t = ThingList(s, n)
+        setattr(t, "is_"+s, True)
+        setattr(self, s, t)
+        return t
+
+    def _can(self, verb, method, archive=None):
+        if archive:
+            setattr(self, archive, [])
+            def method_wrapper(*args, **kwargs):
+                out = method(self, *args, **kwargs)
+                getattr(self, archive).append(out)
+                return out
+            setattr(self, verb, method_wrapper)
+        else:
+            def method_wrapper(*args, **kwargs):
+                return method(self, *args, **kwargs)
+        setattr(self, verb, method_wrapper)
+        return self
+
+
+class ThingList(Thing, Sequence):
+    def __init__(self, name, n):
+        super().__init__(name)
+        single_name = name[:-1]
+        self._list = [Thing(single_name) for i in range(n)]
+        for t in self._list:
+            setattr(t, "is_"+single_name, True)
+
+    def __len__(self):
+        return len(self._list)
     
-#     def _is_not_a(self, at):
-#         self._is_not_attributes.add(at)
+    def __getitem__(self, item):
+        return self._list[item]
 
-#     def _has(self, n):
-
-# class ThingList(Thing):
-#     def __init__(self, name, n):
-#         super(ThingList, self).__init__(self, name)
-#         self._list = [Thing('') for i in range(n)]
-
-#     def __len__(self):
-#         return len(self._list)
-    
-#     def each(self, fn):
-#         map(fn, self._list)
-        
-
-        
-        
-    
-
-# #     @property
-# #     def is_a(self):
-# #         class 
-        
-        
-        
-# #     class Subprop:
-# #         def __init__(self, prop1, prop2):
-# #             self.prop1 = prop1
-# #             self.prop2 = prop2
-# #         def sum(self):
-# #             return self.prop1 + self.prop2
-# # #     pass
+    def each(self, fn):
+        list(map(fn, self._list))
+        return self

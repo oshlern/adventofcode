@@ -116,3 +116,25 @@ class Map:
 
     def __str__(self):
         return '\n'.join(' '.join('X' if c==1 else '.' if c==0 else '?' for c in r) for r in self.export())
+    
+
+
+
+# Task: find a satisfiable configuration, or show none exists
+# Search approach: try least entropy branches first
+# WHy?
+# If a big branch is unfeasible, we 
+# Maybe try branch that reduces entropy the most?
+# is it because of localized conflicts?
+# is it because there are many options so guessing is likely wrong?
+# is it because of a unique solution constraint
+# is it because of prunability? maybe because probability isnt uniform?
+# is there really a difference
+# X is 20 possibillietis, O is 80
+# 1 smart step, then brute force
+
+# there is a contradiction. cell 89 can't be X (why this form?)
+    # because of cells 74 and 53's current value
+    # if I search something else, I'll hit the contradiction.
+    # But I'll hit it again next time
+    # maybe search from the contradiction
