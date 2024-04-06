@@ -174,3 +174,7 @@ def solution(number):
     triangle = lambda n: (n*(n+1))//2
     mults_sum = lambda n, k: k*triangle((number-1)//k)
     return mults_sum(number, 3) + mults_sum(number, 5) - mults_sum(number, 15)
+
+# https://www.codewars.com/kata/5908242330e4f567e90000a3/train/python
+from numpy import *
+def circleIntersection(a,b,R): t=2*arccos(linalg.norm((a[0]-b[0],a[1]-b[1]))/2/R);return nan_to_num(floor(R**2*(t-sin(t))))
