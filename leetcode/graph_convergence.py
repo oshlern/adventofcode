@@ -1,25 +1,63 @@
 # https://www.codewars.com/kata/60d0fd89efbd700055f491c4/train/python
-from functools import cache
 def converge(g, coins):
-    vs = set(g.keys())
     coins = set(coins)
-#     @cache
-    def neighbors(s):
-        return set().union(*(g[v] for v in s))
-    data = [[{c}, {c}, set(), set()] for c in coins]
-    for i in range(0,len(vs),2):
-        if vs.intersection(*[d[0] for d in data]): return i
-        for d in data:
-            new = neighbors(d[1]) - d[3]
-            if not new: return None
-            d[2].update(new)
-            d[3] = new
-        if vs.intersection(*[d[2] for d in data]): return i+1
-        for d in data:
-            new = neighbors(d[3]) - d[1]
-            if not new: return None
-            d[0].update(new)
-            d[1] = new
+    if len(coins) <= 1: return 0
+    r = [{c}   for c in coins] # reachable from c
+    l = [set() for c in coins] # reachable from c last time
+    r_new, l_new = r[:], l[:]
+    for i in range(1, len(g)):
+        (r, r_new), (l, l_new) = (l, l_new), (r, r_new)
+        for c in range(len(coins)):
+            r_new[c] = set().union(*(g[v] for v in l_new[c])) - r_new[c]
+            r[c].update(r_new[c])
+            if not r_new[c]: return None
+            if r_new[c].intersection(*r): return i
+        
+        
+# def converge(g, coins):
+#     coins = set(coins)
+#     if len(coins) <= 1: return 0
+#     def neighbors(s):
+#         return set().union(*(g[v] for v in s))
+#     data  = [[{c}, {c}, set(), set()] for c in coins] # d: [reachable_i, new_i, reachable_i-1, new_i-1]
+#     odds  = [d[2] for d in data]
+#     evens = [d[0] for d in data]
+#     for i in range(1,len(g),2):
+#         for d in data:
+#             new = neighbors(d[1]) - d[3]
+#             d[2].update(new)
+#             d[3] = new
+#             if not new: return None
+#             if new.intersection(*odds): return i
+#         for d in data:
+#             new = neighbors(d[3]) - d[1]
+#             d[0].update(new)
+#             d[1] = new
+#             if not new: return None
+#             if new.intersection(*evens): return i+1 
+
+
+# from functools import cache
+# def converge(g, coins):
+#     vs = set(g.keys())
+#     coins = set(coins)
+# #     @cache
+#     def neighbors(s):
+#         return set().union(*(g[v] for v in s))
+#     data = [[{c}, {c}, set(), set()] for c in coins]
+#     for i in range(0,len(vs),2):
+#         if vs.intersection(*[d[0] for d in data]): return i
+#         for d in data:
+#             new = neighbors(d[1]) - d[3]
+#             if not new: return None
+#             d[2].update(new)
+#             d[3] = new
+#         if vs.intersection(*[d[2] for d in data]): return i+1
+#         for d in data:
+#             new = neighbors(d[3]) - d[1]
+#             if not new: return None
+#             d[0].update(new)
+#             d[1] = new
             
 
 # from functools import cache
