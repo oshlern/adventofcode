@@ -197,3 +197,17 @@ def format_duration(seconds):
     out[-2:] = [" and ".join(out[-2:])]
     out = ", ".join(out)
     return out
+
+# https://www.codewars.com/kata/53f40dff5f9d31b813000774/train/python
+def recoverSecret(triplets):
+    #   'triplets is a list of triplets from the secrent string. Return the string.'
+    out = ""
+    while triplets:
+        inits, not_inits = set(), set()
+        for t in triplets:
+            inits.add(t[0])
+            not_inits.update(t[1:])
+        c = (inits - not_inits).pop()
+        triplets = [[l for l in t if l != c] for t in triplets if t != [c]]
+        out += c
+    return out
