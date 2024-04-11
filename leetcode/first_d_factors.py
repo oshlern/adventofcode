@@ -1,87 +1,60 @@
 # https://www.codewars.com/kata/638af78312eae9a23c9ec5d6/train/python
 
-# from collections import defaultdict
-#     1, 2, 5, 10
-#     2^k * 5^l
-#    (k+1) * (l+1)
-def f(d:int) -> int:
-    fs = reversed(prime_factors(d))
-    ps = get_primes()
-    out = 1
-    print(d)
-    print(prime_factors(d))
-    Fs = {}
-    p = next(ps)
-    for f in fs:
-        print(p, f-1)
-        k = p**(f-1)
-        for P,F in Fs.items():
-            F*last_F
-            for i in range(len(Fs)):
-                if new_F < 
-            if P**(F*(f-1)) < k:
-#                 k = P**(F*(f-1))
-                out *= P**(F*(f-1))
-                Fs[P] = F*f
-                print("  ", p, F*f, F, f)
+import bisect
+
+class Primes:
+    def __init__(self):
+        self.ps = [2,3]
+
+    def __getitem__(self, i):
+        if i >= len(self.ps):
+            self.generate_to(i)
+        return self.ps[i]
+    
+    def generate_to(self, i):
+        k = self.ps[-1] 
+        while len(self.ps) <= i:
+            k += 2
+            for p in self.ps:
+                if k % p == 0:
+                    break
+                if p*p > k:
+                    self.ps.append(k)
+                    break
+
+    def smallest_factors(self, n):
+        fs = []
+        for i in range(n):
+            p = self[i]
+            if p*p > n:
                 break
-        else:
-            Fs[p] = f
-            out *= k
-            p = next(ps)
-            
-#         min()
-#         K
-#         out *= 
-#         if P**(F*(f-1)) < p**(f-1):
-    print(Fs)
-    print(out)
+            while n % p == 0:
+                fs.append(p)
+                n //= p
+        if n > 1:
+            fs.append(n)
+        return fs
+
+    def to_power_of(self, fs):
+        out = 1
+        for i,f in enumerate(fs):
+            out *= self[i] ** (f-1)
+        return out
+
+P = Primes()
+def f(d:int) -> int:
+    fs = list(reversed(P.smallest_factors(d)))
+    out = P.to_power_of(fs)
+    out_fs = fs
+    while True: # merge pair of exponents that leads to smallest number
+        for i in range(len(fs)-1):
+            for j in range(i+1,len(fs)):
+                new_fs = fs[:i] + fs[i+1:j] + fs[j+1:]
+                bisect.insort(new_fs, fs[i]*fs[j], key=lambda x: -x)
+                if (v := P.to_power_of(new_fs)) < out:
+                    out = v
+                    out_fs = new_fs
+        if fs == out_fs: # no merge decreases out
+            break
+        fs = out_fs
     return out
-# 840/5/2/2/2/3/7 11 or 2^(2*(2-1))
-# 2^i*j-1
-
-def prime_factors(n):
-    fs = []
-    p = 2
-    while n%p == 0:
-        fs.append(p)
-        n //= p
-    p += 1
-    while p*p <= n:
-        while n%p == 0:
-            fs.append(p)
-            n //= p
-        p += 2
-    if n != 1:
-        fs.append(n)
-    return fs
-
-def get_primes():
-    yield 2
-    p = 3
-    while True:
-        if len(prime_factors(p)) == 1:
-            yield p
-        p += 2
-
-
-# def prime_factors(n):
-#     fs = defaultdict(int)
-#     p = 2
-#     while n%p == 0:
-#         fs[p] += 1
-#         n //= p
-#     p += 1
-#     while p*p <= n:
-#         while n%p == 0:
-#             fs[p] += 1
-#             n //= p
-#         p += 2
-#     if n != 1:
-#         fs[n] += 1
-#     return fs
-
-
-# primes = [2]
-# for p in range(3,1000,2):
-#     if len(prime_factors)
