@@ -211,3 +211,10 @@ def recoverSecret(triplets):
         triplets = [[l for l in t if l != c] for t in triplets if t != [c]]
         out += c
     return out
+
+# https://www.codewars.com/kata/551f23362ff852e2ab000037/train/python
+def longest_slide_down(pyramid):
+    s = pyramid.pop()
+    for layer in reversed(pyramid):
+        s = [n + max(s[i], s[i+1]) for i,n in enumerate(layer)]
+    return s[0]
