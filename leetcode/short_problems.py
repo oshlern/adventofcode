@@ -178,3 +178,22 @@ def solution(number):
 # https://www.codewars.com/kata/5908242330e4f567e90000a3/train/python
 from numpy import *
 def circleIntersection(a,b,R): t=2*arccos(linalg.norm((a[0]-b[0],a[1]-b[1]))/2/R);return nan_to_num(floor(R**2*(t-sin(t))))
+
+# https://www.codewars.com/kata/52742f58faf5485cae000b9a/train/python
+import math
+def format_duration(seconds):
+    if seconds == 0:
+        return "now"
+    names = ["years", "days", "hours", "minutes", "seconds"]
+    rates = [365, 24, 60, 60, 1]
+    n_secs = [math.prod(rates[i:]) for i in range(len(rates))]
+    out = []
+    for name, n_sec in zip(names, n_secs):
+        q, seconds = divmod(seconds, n_sec)
+        if q > 0:
+            if q == 1:
+                name = name[:-1]
+            out.append(f"{q} {name}")
+    out[-2:] = [" and ".join(out[-2:])]
+    out = ", ".join(out)
+    return out
