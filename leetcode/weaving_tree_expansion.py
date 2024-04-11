@@ -1,21 +1,35 @@
-def dbl_linear(n):
-    pass
+# https://www.codewars.com/kata/5672682212c8ecf83e000050/train/python
+import bisect
+ns = [1]
+to_x = [1]
+expanded_to = 1
+def dbl_linear(m):
+    while m >= len(ns) or ns[m] >= expanded_to:
+        n = to_x.pop(0)
+        for new_n in [2*n+1, 3*n+1]:
+            i = bisect.bisect_left(ns, new_n)
+            if i == len(ns) or ns[i] != new_n:
+                ns.insert(i, new_n)
+                bisect.insort(to_x, new_n)
+        expanded_to = 2*n+1
+    return ns[m]
+
 #     2*(2*1+1)+1=2*2*1+2*1+1
 #     3*2*1+3*1+1
 #     2*3*2*1+3*1+2*1+1
 #     (n - 1 // 2) (n-1)//3
 #     n = 1 % 6
 
-def d(n, depth):
-    if depth == 0:
-        return [n]
-    else:
-        return [n] + d(2*n+1, depth-1) + d(3*n+1, depth-1)
+# def d(n, depth):
+#     if depth == 0:
+#         return [n]
+#     else:
+#         return [n] + d(2*n+1, depth-1) + d(3*n+1, depth-1)
 
-x = d(1, 10)
-print(x)
-X = sorted(list(set(x)))
-print(X)
+# x = d(1, 10)
+# print(x)
+# X = sorted(list(set(x)))
+# print(X)
 # for k in range(0, X[-1], 6):
 #     for i in [k+1,k+3,k+4,k+5]:
 #         if i not in X:
