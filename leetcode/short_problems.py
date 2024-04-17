@@ -445,3 +445,51 @@ def expand(expr): # binomial expansion
     if out[0] == '+':
         out = out[1:]
     return out
+
+# https://www.codewars.com/kata/52597aa56021e91c93000cb0/train/python
+move_zeros = lambda lst: [x for x in lst if x] + [x for x in lst if not x]
+
+# https://www.codewars.com/kata/53e57dada0cb0400ba000688/train/python
+from collections import Counter
+import math
+def list_position(word):
+    """Return the anagram list position of the word"""
+    out = 1
+    for i in range(1, len(word)):
+        c = word[-i-1]
+        s = word[-i:]
+        counts = Counter(s)
+        for d in counts:
+            if d >= c: continue
+            cnts = counts.copy()
+            cnts[d] -= 1
+            cnts[c] += 1
+            n = math.factorial(len(s))
+            for e in cnts:
+                n //= math.factorial(cnts[e])
+            out += n
+    return out
+
+# https://www.codewars.com/kata/56a1c63f3bc6827e13000006/train/python
+def smaller(arr):
+    print(len(arr), len(set(arr)),set(arr))
+    out, keys = [], []
+    cnts = [0]
+    for c in reversed(arr):
+        idx = insert_ind(c, keys)
+        if idx == len(keys) or keys[idx] != c:
+            keys.insert(idx, c)
+            cnts.insert(idx, 0)
+        cnts[idx] += 1
+        out.append(sum(cnts[:idx]))
+    return list(reversed(out))
+
+def insert_ind(c, s):
+    l, h = 0, len(s)
+    while l != h:
+        m = (l + h)//2
+        if s[m] < c:
+            l = m + 1
+        else:
+            h = m
+    return l
