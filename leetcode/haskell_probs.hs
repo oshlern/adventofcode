@@ -133,3 +133,98 @@ oddTimesEven :: Odd n -> Even m -> Even (Mult n m)
 oddTimesEven OneOdd m = m
 oddTimesEven (NextOdd n) m = evenPlusEven (evenPlusEven (oddTimesEven n m) m) m
 
+-- https://www.codewars.com/kata/59db393bc1596bd2b700007f/train/haskell
+{-# LANGUAGE GADTs         #-}
+{-# LANGUAGE TypeFamilies  #-}
+{-# LANGUAGE TypeOperators #-}
+
+module Kata.AdditionCommutes
+  ( plusCommutes ) where
+
+import Kata.AdditionCommutes.Definitions
+  ( Z, S
+  , Natural(..), Equal(..)
+  , (:+:))
+
+-- | if a = b and b = c, then a = c.
+transitive :: Equal a b -> Equal b c -> Equal a c
+transitive EqlZ EqlZ = EqlZ
+transitive (EqlS e_ab) (EqlS e_bc) = EqlS (transitive e_ab e_bc)
+
+-- | S(a+b) = a + S(b)
+sDistributes :: Natural a -> Natural b -> Equal (S (a :+: b)) (a :+: (S b))
+sDistributes NumZ NumZ = EqlS EqlZ
+sDistributes NumZ (NumS b) = EqlS (sDistributes NumZ b)
+sDistributes (NumS a) b = EqlS (sDistributes a b)
+
+-- | a + b = b + a
+plusCommutes :: Natural a -> Natural b -> Equal (a :+: b) (b :+: a)
+plusCommutes NumZ NumZ = EqlZ
+-- ____Want to show Z+S(b) = S(b)+Z____
+-- Z+S(b) = S(b)   -- implicit from Add
+-- S(b)   = S(Z+b) -- implicit from Add
+-- S(Z+b) = S(b+Z) -- recurse plusCommutes
+-- S(b+Z) = S(b)+Z -- implicit from Add
+plusCommutes NumZ (NumS b) = EqlS (plusCommutes NumZ b)
+-- ____Want to show (S a)+b = b+(S a)____
+-- (S a)+b = S (a+b) -- implicit from Add
+-- S (a+b) = S (b+a) -- recurse plusCommutes
+-- S (b+a) = b+(S a) -- lemma sDistributes
+plusCommutes (NumS a) b = transitive (EqlS (plusCommutes a b)) (sDistributes b a)
+
+
+-- -- | For any n, n = n.
+-- reflexive :: Natural n -> Equal n n
+-- reflexive NumZ = EqlZ
+-- reflexive (NumS n) = EqlS (reflexive n)
+
+-- -- | if a = b, then b = a.
+-- symmetric :: Equal a b -> Equal b a
+-- symmetric EqlZ = EqlZ
+-- symmetric (EqlS e) = EqlS (symmetric e)
+
+-- For reference, here are the definitions, if you
+-- want to copy them into an IDE:
+{-
+
+-- For older GHC where Type is not in Prelude
+import Data.Kind (Type)
+
+-- | The natural numbers, encoded in types.
+data Z
+data S n
+
+-- | Predicate describing natural numbers.
+-- | This allows us to reason with `Nat`s.
+data Natural :: Type -> Type where
+    NumZ :: Natural Z
+    NumS :: Natural n -> Natural (S n)
+
+-- | Predicate describing equality of natural numbers.
+data Equal :: Type -> Type -> Type where
+    EqlZ :: Equal Z Z
+    EqlS :: Equal n m -> Equal (S n) (S m)
+
+-- | Peano definition of addition.
+type family (:+:) (n :: Type) (m :: Type) :: Type
+type instance Z :+: m = m
+type instance S n :+: m = S (n :+: m)
+
+-}
+
+-- https://www.codewars.com/kata/541c8630095125aba6000c00/train/haskell
+module DigitalRoot where
+
+digitalRoot :: Integral a => a -> a
+digitalRoot n = if s < 10 then s else digitalRoot s where s = sumDigs n
+    
+sumDigs 0 = 0
+sumDigs n = (n `mod` 10) + sumDigs (n `div` 10)
+
+-- digitalRoot 0 = 0
+-- digitalRoot n = if rest == 0 then digit else digitalRoot (digit + (digitalRoot rest)) where 
+--     digit = n `mod` 10
+--     rest = n `div` 10
+
+
+
