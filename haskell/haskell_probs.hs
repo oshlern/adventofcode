@@ -227,4 +227,13 @@ sumDigs n = (n `mod` 10) + sumDigs (n `div` 10)
 --     rest = n `div` 10
 
 
+-- https://www.codewars.com/kata/525f50e3b73515a6db000b83/train/haskell
+module CreatePhoneNumber where
 
+createPhoneNumber :: [Int] -> String
+createPhoneNumber ns = 
+  let a = take 3 ns
+      rest = drop 3 ns
+      b = take 3 rest
+      c = drop 3 rest
+  in "(" ++ (concatMap show a) ++ ") " ++ (concatMap show b) ++ "-" ++ (concatMap show c)
