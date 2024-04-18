@@ -19,9 +19,10 @@ bubble_up heap i = let p = i `div` 2 in
                        if (heap!!i) < (heap!!p) then bubble_up (swap heap p i) p else heap
 
 bubble_down :: [Integer] -> Int -> [Integer]
-bubble_down heap i = let c0 = 2*i+1; c1 = c0+1 in
-                       if c0<(length heap) && (heap!!i)>(heap!!c0) then bubble_down (swap heap i c0) c0 else
-                       if c1<(length heap) && (heap!!i)>(heap!!c1) then bubble_down (swap heap i c1) c1 else heap
+bubble_down heap i = let c0 = 2*i+1; c1 = c0+1; ci = (if c1<(length heap) && (heap!!c0)>(heap!!c1) then c1 else c0)  in
+                      if ci<(length heap) && (heap!!i)>(heap!!ci) then bubble_down (swap heap i ci) ci else heap
+        -- if c0<(length heap) && (heap!!i)>(heap!!c0) then bubble_down (swap heap i c0) c0 else
+        --     if c1<(length heap) && (heap!!i)>(heap!!c1) then bubble_down (swap heap i c1) c1 else heap
 
 h_insert:: [Integer] -> Integer -> [Integer]
 h_insert heap e = bubble_up (heap ++ [e]) (length heap)
