@@ -237,3 +237,46 @@ createPhoneNumber ns =
       b = take 3 rest
       c = drop 3 rest
   in "(" ++ (concatMap show a) ++ ") " ++ (concatMap show b) ++ "-" ++ (concatMap show c)
+
+
+-- https://www.codewars.com/kata/54b724efac3d5402db00065e/train/haskell
+module Codewars.Kata.DecodeMorse (decodeMorse) where
+
+import Codewars.Kata.DecodeMorse.Preload (morseCodes)
+
+import Data.Map.Strict ((!))
+import Data.List.Split (splitOn)
+
+decodeMorse :: String -> String
+decodeMorse s = unwords (map (concat . (map (morseCodes !)) . (splitOn " ")) (splitOn "   " (noSpace s)))
+
+noSpace "" = ""
+noSpace (a:as) = if a == ' ' then (noSpace as) else noEndSpace (a:as)
+noEndSpace "" = ""
+noEndSpace s = if (last s) == ' ' then noEndSpace (init s) else s
+
+-- https://www.codewars.com/kata/54b72c16cd7f5154e9000457/solutions/haskell
+module Kata.DecodeMorseAdvanced where
+
+import Kata.DecodeMorseAdvanced.Preload    -- holds the "morseCodes" data structure for you
+import Data.List
+import Data.List.Split (splitOn)
+
+decodeBits :: String -> String
+decodeBits bits = pChar bs
+  where
+    process = map length
+            . group
+            . dropWhileEnd ('0'==)
+            . dropWhile ('0'==) 
+    bs = process bits
+    l = minimum bs
+    pChar [] = ""
+    pChar (a:as) = (if a == l then "." else "-") ++ (pSpace as)
+    pSpace [] = ""
+    pSpace (a:as) = (if a == l then "" else if a == 3*l then " " else "   ") ++ (pChar as)
+
+decodeMorse :: String -> String
+decodeMorse = unwords
+            . map (concat . (map (morseCodes !)) . (splitOn " "))
+            . splitOn "   "
