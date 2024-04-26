@@ -237,3 +237,20 @@ createPhoneNumber ns =
       b = take 3 rest
       c = drop 3 rest
   in "(" ++ (concatMap show a) ++ ") " ++ (concatMap show b) ++ "-" ++ (concatMap show c)
+
+-- https://www.codewars.com/kata/5a622f5f85bef7a9e90009e2/solutions/haskell
+module ReverseFizzBuzz (reverseFizzBuzz) where
+
+reverseFizzBuzz :: String -> [Int]
+reverseFizzBuzz = rev 0 . words
+
+rev :: Int -> [String] -> [Int]
+rev 0 ["Fizz"] = [3]
+rev 0 ["Buzz"] = [5]
+rev 0 ["FizzBuzz"] = [15]
+rev 1 ["Fizz"] = [5, 6]
+rev 1 ["Buzz"] = [9, 10]
+rev n (a:as) = if isNum a then [i-n..i+(length as)] else rev (n+1) as where i = read a :: Int
+rev n [] = []
+
+isNum = all (\c -> c >= '0' && c <= '9')
