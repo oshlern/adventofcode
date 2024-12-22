@@ -18,5 +18,5 @@ def calc_fewest(code, N_ROBOT_KEYBOARDS):
                 leg_lengths[(layer, ki, kf)] = min(fewest_hor_first, fewest_ver_first)
     return fewest_presses(layer, code)
 
-part_1 = lambda: sum(calc_fewest(code, 3)  * int(code[:-1]) for code in INPUT.splitlines())
-part_2 = lambda: sum(calc_fewest(code, 26) * int(code[:-1]) for code in INPUT.splitlines())
+part_1 = sum(calc_fewest(code, 3)  * int(code[:-1]) for code in INPUT.splitlines())
+part_2 = sum(calc_fewest(code, 26) * int(code[:-1]) for code in INPUT.splitlines())
