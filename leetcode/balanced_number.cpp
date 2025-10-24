@@ -1,3 +1,4 @@
+// https://leetcode.com/problems/next-greater-numerically-balanced-number/post-solution/?submissionId=1810037097
 class Solution {
     public:
         int nextBeautifulNumber(int n) {
